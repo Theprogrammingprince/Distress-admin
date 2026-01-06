@@ -3,31 +3,29 @@ import { ChevronDown } from 'lucide-react';
 import { trafficSources } from '../../data/mockData';
 
 export default function TrafficSources() {
-    const total = trafficSources.reduce((acc, item) => acc + item.percentage, 0);
-
     return (
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <div className="bg-white rounded-xl p-5 border border-gray-100">
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Sales by traffic source</h3>
-                <button className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg text-sm text-gray-600 hover:bg-gray-100 transition-all">
+            <div className="flex items-center justify-between mb-5">
+                <h3 className="text-base font-semibold text-gray-900">Sales by traffic source</h3>
+                <button className="flex items-center gap-1.5 px-2.5 py-1 text-xs text-gray-600 hover:bg-gray-50 rounded-md transition-colors">
                     Monthly
-                    <ChevronDown className="w-4 h-4" />
+                    <ChevronDown className="w-3.5 h-3.5" />
                 </button>
             </div>
 
             {/* Donut Chart */}
-            <div className="flex items-center gap-6">
-                <div className="relative w-36 h-36">
+            <div className="flex items-center justify-center gap-8">
+                <div className="relative w-32 h-32">
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                             <Pie
                                 data={trafficSources}
                                 cx="50%"
                                 cy="50%"
-                                innerRadius={40}
-                                outerRadius={60}
-                                paddingAngle={4}
+                                innerRadius={42}
+                                outerRadius={58}
+                                paddingAngle={3}
                                 dataKey="percentage"
                             >
                                 {trafficSources.map((entry, index) => (
@@ -40,23 +38,23 @@ export default function TrafficSources() {
                     {/* Center Text */}
                     <div className="absolute inset-0 flex items-center justify-center">
                         <div className="text-center">
-                            <p className="text-lg font-bold text-gray-900">100%</p>
+                            <p className="text-xl font-bold text-gray-900">100%</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Legend */}
-                <div className="flex-1 space-y-3">
+                <div className="flex-1 space-y-2.5">
                     {trafficSources.map((source, index) => (
                         <div key={index} className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <div
-                                    className="w-3 h-3 rounded-full"
+                                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                                     style={{ backgroundColor: source.color }}
                                 />
-                                <span className="text-sm text-gray-600">{source.source}</span>
+                                <span className="text-xs text-gray-600">{source.source}</span>
                             </div>
-                            <span className="text-sm font-semibold text-gray-900">{source.percentage}%</span>
+                            <span className="text-xs font-semibold text-gray-900">{source.percentage}%</span>
                         </div>
                     ))}
                 </div>

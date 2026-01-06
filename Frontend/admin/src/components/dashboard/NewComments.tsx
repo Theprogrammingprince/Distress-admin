@@ -3,22 +3,20 @@ import { recentComments } from '../../data/mockData';
 
 export default function NewComments() {
     return (
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">New Comment</h3>
+        <div className="bg-white rounded-xl p-5 border border-gray-100">
+            <h3 className="text-base font-semibold text-gray-900 mb-5">New Comment</h3>
 
             <div className="space-y-4">
                 {recentComments.map((comment) => (
-                    <div key={comment.id} className="flex gap-4">
+                    <div key={comment.id} className="flex gap-3">
                         {/* Avatar */}
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-medium text-sm flex-shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
                             {comment.user.name.split(' ').map(n => n[0]).join('')}
                         </div>
 
                         {/* Content */}
                         <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between mb-1">
-                                <h4 className="text-sm font-semibold text-gray-900">{comment.user.name}</h4>
-                            </div>
+                            <h4 className="text-sm font-semibold text-gray-900 mb-1">{comment.user.name}</h4>
 
                             {/* Rating */}
                             <div className="flex items-center gap-0.5 mb-2">
@@ -34,7 +32,7 @@ export default function NewComments() {
                             </div>
 
                             {/* Comment Text */}
-                            <p className="text-sm text-gray-500 leading-relaxed line-clamp-2">
+                            <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">
                                 {comment.text}
                             </p>
                         </div>
