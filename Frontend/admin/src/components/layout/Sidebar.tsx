@@ -8,7 +8,8 @@ import {
     UserCog,
     Settings,
     ChevronDown,
-    MessageCircle,
+    ChevronLeft,
+    ChevronRight,
 } from 'lucide-react';
 import { navigationItems, messages } from '../../data/mockData';
 
@@ -31,23 +32,21 @@ export default function Sidebar({ activeItem, onItemClick }: SidebarProps) {
     const [isMessagesOpen, setIsMessagesOpen] = useState(true);
 
     return (
-        <aside className="w-64 bg-white h-screen flex flex-col border-r border-gray-100 fixed left-0 top-0">
+        <aside className="w-64 bg-[#f8fafc] h-screen flex flex-col fixed left-0 top-0">
             {/* Logo */}
-            <div className="p-6 border-b border-gray-100">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                        <Package className="w-5 h-5 text-white" />
-                    </div>
-                    <span className="text-xl font-bold text-gray-900">Bazar</span>
+            <div className="px-5 py-6 flex items-center gap-2">
+                <button className="p-1 hover:bg-gray-200 rounded">
+                    <ChevronLeft className="w-4 h-4 text-gray-600" />
+                </button>
+                <div className="flex items-center gap-2">
+                    <Package className="w-6 h-6 text-blue-600" />
+                    <span className="text-lg font-bold text-gray-900">Bazar</span>
                 </div>
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 px-4 py-6 overflow-y-auto">
-                <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-4 px-3">
-                    Menu
-                </p>
-                <ul className="space-y-1">
+            <nav className="flex-1 px-3 pt-2 overflow-y-auto">
+                <ul className="space-y-0.5">
                     {navigationItems.map((item) => {
                         const IconComponent = iconMap[item.icon];
                         const isActive = activeItem === item.id;
@@ -56,12 +55,12 @@ export default function Sidebar({ activeItem, onItemClick }: SidebarProps) {
                             <li key={item.id}>
                                 <button
                                     onClick={() => onItemClick(item.id)}
-                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${isActive
-                                            ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30'
-                                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${isActive
+                                            ? 'bg-blue-600 text-white'
+                                            : 'text-gray-700 hover:bg-gray-100'
                                         }`}
                                 >
-                                    {IconComponent && <IconComponent className="w-5 h-5" />}
+                                    {IconComponent && <IconComponent className="w-4 h-4" />}
                                     <span>{item.label}</span>
                                 </button>
                             </li>
@@ -70,31 +69,31 @@ export default function Sidebar({ activeItem, onItemClick }: SidebarProps) {
                 </ul>
 
                 {/* Messages Section */}
-                <div className="mt-8">
+                <div className="mt-6">
                     <button
                         onClick={() => setIsMessagesOpen(!isMessagesOpen)}
-                        className="flex items-center justify-between w-full px-3 mb-4"
+                        className="flex items-center justify-between w-full px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide"
                     >
-                        <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">
-                            Message
-                        </p>
-                        <ChevronDown
-                            className={`w-4 h-4 text-gray-400 transition-transform ${isMessagesOpen ? 'rotate-180' : ''
-                                }`}
-                        />
+                        <span>Message</span>
+                        <div className="flex items-center gap-1">
+                            <ChevronLeft className="w-3 h-3" />
+                            <ChevronRight className="w-3 h-3" />
+                        </div>
                     </button>
 
                     {isMessagesOpen && (
-                        <ul className="space-y-1">
+                        <ul className="mt-2 space-y-0.5">
                             {messages.map((message) => (
                                 <li key={message.id}>
-                                    <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition-all duration-200">
-                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                                            <MessageCircle className="w-4 h-4 text-gray-500" />
+                                    <button className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100 transition-all duration-150">
+                                        <div className="w-7 h-7 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
+                                            <span className="text-xs font-medium text-gray-600">
+                                                {message.user.name.charAt(0)}
+                                            </span>
                                         </div>
-                                        <span className="flex-1 text-left">{message.user.name}</span>
+                                        <span className="flex-1 text-left text-sm">{message.user.name}</span>
                                         {message.unread && (
-                                            <span className="w-5 h-5 bg-blue-500 text-white text-xs font-medium rounded-full flex items-center justify-center">
+                                            <span className="w-4 h-4 bg-blue-600 text-white text-[10px] font-semibold rounded-full flex items-center justify-center">
                                                 {message.unread}
                                             </span>
                                         )}
@@ -105,12 +104,17 @@ export default function Sidebar({ activeItem, onItemClick }: SidebarProps) {
                     )}
 
                     {/* View All Contacts */}
-                    <button className="w-full flex items-center gap-3 px-4 py-2.5 mt-2 text-sm text-blue-500 font-medium hover:bg-blue-50 rounded-xl transition-all duration-200">
+                    <button className="w-full flex items-center gap-2 px-3 py-2 mt-2 text-sm text-blue-600 font-medium hover:bg-blue-50 rounded-lg transition-all duration-150">
                         <Users className="w-4 h-4" />
                         <span>View All Contacts</span>
                     </button>
                 </div>
             </nav>
+
+            {/* Footer */}
+            <div className="px-3 py-4 text-xs text-gray-400">
+                v2.0
+            </div>
         </aside>
     );
 }
