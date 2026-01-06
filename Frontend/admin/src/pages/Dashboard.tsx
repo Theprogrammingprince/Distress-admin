@@ -22,7 +22,7 @@ export default function Dashboard() {
     ];
 
     return (
-        <div className="min-h-screen bg-[#fafbfc]">
+        <div className="min-h-screen bg-gray-50">
             {/* Sidebar */}
             <Sidebar
                 activeItem={activeNavItem}
@@ -48,9 +48,9 @@ export default function Dashboard() {
                 />
 
                 {/* Dashboard Content */}
-                <main className="p-4 lg:p-6">
+                <main className="p-6">
                     {/* Stats Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5 mb-4 lg:mb-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-6">
                         {statCards.map((stat, index) => (
                             <StatCard
                                 key={stat.id}
@@ -62,27 +62,22 @@ export default function Dashboard() {
                     </div>
 
                     {/* Charts Row */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5 mb-4 lg:mb-6">
-                        {/* Product Sales Chart - Takes 2 columns on large screens */}
-                        <div className="lg:col-span-2">
+                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-6">
+                        {/* Product Sales Chart */}
+                        <div className="xl:col-span-2">
                             <ProductSalesChart />
                         </div>
 
                         {/* Top Selling Products */}
-                        <div className="lg:col-span-1">
+                        <div className="xl:col-span-1">
                             <TopSellingProducts />
                         </div>
                     </div>
 
                     {/* Bottom Row */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
-                        {/* Top Countries */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                         <TopCountries />
-
-                        {/* Traffic Sources */}
                         <TrafficSources />
-
-                        {/* New Comments */}
                         <NewComments />
                     </div>
                 </main>
