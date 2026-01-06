@@ -12,10 +12,15 @@ import { statCards } from '../data/mockData';
 export default function Dashboard() {
     const [activeNavItem, setActiveNavItem] = useState('1');
 
-    const statColors = ['#3b82f6', '#22c55e', '#f59e0b', '#8b5cf6'];
+    const statConfigs = [
+        { color: '#3b82f6', chartType: 'line' as const },
+        { color: '#22c55e', chartType: 'bar' as const },
+        { color: '#06b6d4', chartType: 'line' as const },
+        { color: '#ec4899', chartType: 'line' as const },
+    ];
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-[#fafbfc]">
             {/* Sidebar */}
             <Sidebar activeItem={activeNavItem} onItemClick={setActiveNavItem} />
 
@@ -28,33 +33,34 @@ export default function Dashboard() {
                 />
 
                 {/* Dashboard Content */}
-                <main className="p-8">
+                <main className="p-6">
                     {/* Stats Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div className="grid grid-cols-4 gap-5 mb-6">
                         {statCards.map((stat, index) => (
                             <StatCard
                                 key={stat.id}
                                 data={stat}
-                                color={statColors[index % statColors.length]}
+                                color={statConfigs[index].color}
+                                chartType={statConfigs[index].chartType}
                             />
                         ))}
                     </div>
 
                     {/* Charts Row */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <div className="grid grid-cols-3 gap-5 mb-6">
                         {/* Product Sales Chart - Takes 2 columns */}
-                        <div className="lg:col-span-2">
+                        <div className="col-span-2">
                             <ProductSalesChart />
                         </div>
 
                         {/* Top Selling Products */}
-                        <div className="lg:col-span-1">
+                        <div className="col-span-1">
                             <TopSellingProducts />
                         </div>
                     </div>
 
                     {/* Bottom Row */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-3 gap-5">
                         {/* Top Countries */}
                         <TopCountries />
 
