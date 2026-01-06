@@ -1,4 +1,4 @@
-import { NavItem, Message, StatCard, SalesData, CountryData, TrafficSource, Comment } from '../types';
+import type { NavItem, Message, StatCard, SalesData, CountryData, TrafficSource, Comment } from '../types';
 
 export const navigationItems: NavItem[] = [
     { id: '1', label: 'Dashboard', icon: 'LayoutDashboard', path: '/', badge: undefined },

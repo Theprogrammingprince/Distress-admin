@@ -1,6 +1,6 @@
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
-import { StatCard as StatCardType } from '../../types';
+import type { StatCard as StatCardType } from '../../types';
 
 interface StatCardProps {
     data: StatCardType;
@@ -22,8 +22,8 @@ export default function StatCard({ data, color = '#3b82f6' }: StatCardProps) {
                 </div>
                 <div
                     className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${data.changeType === 'increase'
-                            ? 'bg-green-50 text-green-600'
-                            : 'bg-red-50 text-red-600'
+                        ? 'bg-green-50 text-green-600'
+                        : 'bg-red-50 text-red-600'
                         }`}
                 >
                     {data.changeType === 'increase' ? (
