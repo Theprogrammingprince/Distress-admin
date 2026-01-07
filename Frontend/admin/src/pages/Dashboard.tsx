@@ -2,83 +2,68 @@ import { useState } from 'react';
 import Sidebar from '../components/layout/Sidebar';
 import Header from '../components/layout/Header';
 import StatCard from '../components/dashboard/StatCard';
-import ProductSalesChart from '../components/dashboard/ProductSalesChart';
-import TopSellingProducts from '../components/dashboard/TopSellingProducts';
-import TopCountries from '../components/dashboard/TopCountries';
-import TrafficSources from '../components/dashboard/TrafficSources';
-import NewComments from '../components/dashboard/NewComments';
+import SalesStatistic from '../components/dashboard/SalesStatistic';
+import ShipmentStatus from '../components/dashboard/ShipmentStatus';
+import RecentOrders from '../components/dashboard/RecentOrders';
+import SalesOverview from '../components/dashboard/SalesOverview';
 import { statCards } from '../data/mockData';
 
-export default function Dashboard() {
-    const [activeNavItem, setActiveNavItem] = useState('1');
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-    const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+interface DashboardProps {
+    activeNavItem: string;
+    onNavItemClick: (id: string, path: string) => void;
+}
 
-    const statConfigs = [
-        { color: '#3b82f6', chartType: 'line' as const },
-        { color: '#22c55e', chartType: 'bar' as const },
-        { color: '#06b6d4', chartType: 'line' as const },
-        { color: '#ec4899', chartType: 'line' as const },
-    ];
+export default function Dashboard({ activeNavItem, onNavItemClick }: DashboardProps) {
+    const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Sidebar */}
             <Sidebar
                 activeItem={activeNavItem}
-                onItemClick={setActiveNavItem}
-                isCollapsed={isSidebarCollapsed}
-                onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                onItemClick={onNavItemClick}
                 isMobileOpen={isMobileSidebarOpen}
                 onMobileClose={() => setIsMobileSidebarOpen(false)}
             />
 
             {/* Main Content */}
-            <div
-                className={`
-          transition-all duration-300 ease-in-out
-          ${isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}
-        `}
-            >
+            <div className="lg:ml-64">
                 {/* Header */}
-                <Header
-                    title="Dashboard"
-                    subtitle="Here is the summary of overall data"
-                    onMenuClick={() => setIsMobileSidebarOpen(true)}
-                />
+                <Header onMenuClick={() => setIsMobileSidebarOpen(true)} />
 
                 {/* Dashboard Content */}
                 <main className="p-6">
                     {/* Stats Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-6">
-                        {statCards.map((stat, index) => (
-                            <StatCard
-                                key={stat.id}
-                                data={stat}
-                                color={statConfigs[index].color}
-                                chartType={statConfigs[index].chartType}
-                            />
+                        {statCards.map((stat) => (
+                            <StatCard key={stat.id} data={stat} />
                         ))}
                     </div>
 
                     {/* Charts Row */}
                     <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-6">
-                        {/* Product Sales Chart */}
+                        {/* Sales Statistic */}
                         <div className="xl:col-span-2">
-                            <ProductSalesChart />
+                            <SalesStatistic />
                         </div>
 
-                        {/* Top Selling Products */}
+                        {/* Shipment Status */}
                         <div className="xl:col-span-1">
-                            <TopSellingProducts />
+                            <ShipmentStatus />
                         </div>
                     </div>
 
                     {/* Bottom Row */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                        <TopCountries />
-                        <TrafficSources />
-                        <NewComments />
+                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
+                        {/* Recent Orders */}
+                        <div className="xl:col-span-2">
+                            <RecentOrders />
+                        </div>
+
+                        {/* Sales Overview */}
+                        <div className="xl:col-span-1">
+                            <SalesOverview />
+                        </div>
                     </div>
                 </main>
             </div>
