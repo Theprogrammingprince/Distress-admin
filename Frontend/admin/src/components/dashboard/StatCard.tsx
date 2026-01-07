@@ -1,60 +1,35 @@
-import { TrendingUp, TrendingDown } from 'lucide-react';
-import { LineChart, Line, BarChart, Bar, ResponsiveContainer } from 'recharts';
+import { TrendingUp, Users, Package, ShoppingBag } from 'lucide-react';
 import type { StatCard as StatCardType } from '../../types';
+
+const iconMap: { [key: string]: React.ElementType } = {
+    TrendingUp,
+    Users,
+    Package,
+    ShoppingBag,
+};
 
 interface StatCardProps {
     data: StatCardType;
-    color?: string;
-    chartType?: 'line' | 'bar';
 }
 
-export default function StatCard({ data, color = '#3b82f6', chartType = 'line' }: StatCardProps) {
-    const chartData = data.chartData?.map((value, index) => ({
-        value,
-        index,
-    })) || [];
+export default function StatCard({ data }: StatCardProps) {
+    const IconComponent = iconMap[data.icon];
 
     return (
-        <div className="bg-white rounded-xl p-5 border border-gray-100">
-            <div className="flex items-start justify-between mb-3">
+        <div className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-shadow duration-300">
+            <div className="flex items-start justify-between">
                 <div className="flex-1">
-                    <p className="text-xs text-gray-500 mb-1.5">{data.title}</p>
-                    <h3 className="text-2xl font-bold text-gray-900">{data.value}</h3>
+                    <p className="text-sm text-gray-500 mb-2">{data.title}</p>
+                    <h3 className="text-3xl font-bold text-gray-900">{data.value}</h3>
                 </div>
                 <div
-                    className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold ${data.changeType === 'increase'
-                            ? 'text-green-600'
-                            : 'text-red-600'
-                        }`}
+                    className="w-14 h-14 rounded-xl flex items-center justify-center"
+                    style={{ backgroundColor: data.bgColor }}
                 >
-                    {data.changeType === 'increase' ? (
-                        <TrendingUp className="w-3 h-3" />
-                    ) : (
-                        <TrendingDown className="w-3 h-3" />
+                    {IconComponent && (
+                        <IconComponent className="w-7 h-7" style={{ color: data.color }} />
                     )}
-                    <span>{data.change}%</span>
                 </div>
-            </div>
-
-            {/* Mini Chart */}
-            <div className="h-14 -mx-1">
-                <ResponsiveContainer width="100%" height="100%">
-                    {chartType === 'line' ? (
-                        <LineChart data={chartData}>
-                            <Line
-                                type="monotone"
-                                dataKey="value"
-                                stroke={color}
-                                strokeWidth={2}
-                                dot={false}
-                            />
-                        </LineChart>
-                    ) : (
-                        <BarChart data={chartData}>
-                            <Bar dataKey="value" fill={color} radius={[2, 2, 0, 0]} />
-                        </BarChart>
-                    )}
-                </ResponsiveContainer>
             </div>
         </div>
     );

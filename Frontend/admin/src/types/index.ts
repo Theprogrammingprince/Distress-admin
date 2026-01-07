@@ -3,7 +3,7 @@ export interface User {
     name: string;
     email: string;
     avatar?: string;
-    balance: number;
+    role: string;
 }
 
 export interface NavItem {
@@ -11,61 +11,54 @@ export interface NavItem {
     label: string;
     icon: string;
     path: string;
-    badge?: number;
-}
-
-export interface Message {
-    id: string;
-    user: {
-        name: string;
-        avatar?: string;
-    };
-    unread?: number;
 }
 
 export interface StatCard {
     id: string;
     title: string;
     value: string;
-    change: number;
-    changeType: 'increase' | 'decrease';
-    chartData?: number[];
+    icon: string;
+    color: string;
+    bgColor: string;
+}
+
+export interface SalesData {
+    month: string;
+    value: number;
+}
+
+export interface ShipmentStatus {
+    status: string;
+    percentage: number;
+    color: string;
+}
+
+export interface Order {
+    id: string;
+    orderId: string;
+    product: string;
+    productImage: string;
+    customerName: string;
+    date: string;
+    item: number;
+    price: number;
+    total: number;
+    status: 'Pending' | 'Completed' | 'Returned';
+}
+
+export interface SalesOverviewItem {
+    category: string;
+    percentage: number;
+    color: string;
+    barColor: string;
 }
 
 export interface Product {
     id: string;
     name: string;
+    category: string;
     price: number;
-    image: string;
-    rating: number;
-}
-
-export interface SalesData {
-    month: string;
-    sales: number;
-    earning: number;
-}
-
-export interface CountryData {
-    country: string;
-    flag: string;
-    percentage: number;
-    color: string;
-}
-
-export interface TrafficSource {
-    source: string;
-    percentage: number;
-    color: string;
-}
-
-export interface Comment {
-    id: string;
-    user: {
-        name: string;
-        avatar?: string;
-    };
-    rating: number;
-    text: string;
-    date: string;
+    stock: number;
+    status: 'In Stock' | 'Low Stock' | 'Out of Stock';
+    image?: string;
 }
