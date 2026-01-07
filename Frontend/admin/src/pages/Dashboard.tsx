@@ -15,6 +15,7 @@ interface DashboardProps {
 
 export default function Dashboard({ activeNavItem, onNavItemClick }: DashboardProps) {
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -24,25 +25,33 @@ export default function Dashboard({ activeNavItem, onNavItemClick }: DashboardPr
                 onItemClick={onNavItemClick}
                 isMobileOpen={isMobileSidebarOpen}
                 onMobileClose={() => setIsMobileSidebarOpen(false)}
+                isCollapsed={isSidebarCollapsed}
+                onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
             />
 
             {/* Main Content */}
-            <div className="lg:ml-64">
+            <div
+                className={`transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'
+                    }`}
+            >
                 {/* Header */}
-                <Header onMenuClick={() => setIsMobileSidebarOpen(true)} />
+                <Header
+                    onMenuClick={() => setIsMobileSidebarOpen(true)}
+                    isSidebarCollapsed={isSidebarCollapsed}
+                />
 
                 {/* Dashboard Content */}
-                <main className="p-6">
+                <main className="p-4 sm:p-6 lg:p-8">
                     {/* Stats Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
                         {statCards.map((stat) => (
                             <StatCard key={stat.id} data={stat} />
                         ))}
                     </div>
 
                     {/* Charts Row */}
-                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-6">
-                        {/* Sales Statistic */}
+                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6 mb-6 lg:mb-8">
+                        {/* Sales Statistic - Takes 2 columns on xl */}
                         <div className="xl:col-span-2">
                             <SalesStatistic />
                         </div>
@@ -54,8 +63,8 @@ export default function Dashboard({ activeNavItem, onNavItemClick }: DashboardPr
                     </div>
 
                     {/* Bottom Row */}
-                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
-                        {/* Recent Orders */}
+                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6">
+                        {/* Recent Orders - Takes 2 columns on xl */}
                         <div className="xl:col-span-2">
                             <RecentOrders />
                         </div>
