@@ -16,7 +16,6 @@ export default function ComingSoonPage({
     description,
 }: ComingSoonPageProps) {
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -25,15 +24,10 @@ export default function ComingSoonPage({
                 onItemClick={onNavItemClick}
                 isMobileOpen={isMobileSidebarOpen}
                 onMobileClose={() => setIsMobileSidebarOpen(false)}
-                isCollapsed={isSidebarCollapsed}
-                onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
             />
 
-            <div className={`transition-all duration-300 ${isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
-                <Header
-                    onMenuClick={() => setIsMobileSidebarOpen(true)}
-                    isSidebarCollapsed={isSidebarCollapsed}
-                />
+            <div className="lg:ml-64 transition-all duration-300">
+                <Header onMenuClick={() => setIsMobileSidebarOpen(true)} />
 
                 <main className="p-4 sm:p-6 lg:p-8">
                     <div className="bg-white rounded-2xl p-8 lg:p-16 border border-gray-100 flex flex-col items-center justify-center min-h-[600px] text-center">

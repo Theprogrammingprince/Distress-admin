@@ -11,7 +11,6 @@ interface ProductsProps {
 
 export default function Products({ activeNavItem, onNavItemClick }: ProductsProps) {
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -33,15 +32,10 @@ export default function Products({ activeNavItem, onNavItemClick }: ProductsProp
                 onItemClick={onNavItemClick}
                 isMobileOpen={isMobileSidebarOpen}
                 onMobileClose={() => setIsMobileSidebarOpen(false)}
-                isCollapsed={isSidebarCollapsed}
-                onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
             />
 
-            <div className={`transition-all duration-300 ${isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
-                <Header
-                    onMenuClick={() => setIsMobileSidebarOpen(true)}
-                    isSidebarCollapsed={isSidebarCollapsed}
-                />
+            <div className="lg:ml-64 transition-all duration-300">
+                <Header onMenuClick={() => setIsMobileSidebarOpen(true)} />
 
                 <main className="p-4 sm:p-6 lg:p-8">
                     <div className="bg-white rounded-2xl p-6 lg:p-8 border border-gray-100 shadow-sm">

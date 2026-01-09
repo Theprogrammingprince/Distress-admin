@@ -15,7 +15,6 @@ interface DashboardProps {
 
 export default function Dashboard({ activeNavItem, onNavItemClick }: DashboardProps) {
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -25,20 +24,12 @@ export default function Dashboard({ activeNavItem, onNavItemClick }: DashboardPr
                 onItemClick={onNavItemClick}
                 isMobileOpen={isMobileSidebarOpen}
                 onMobileClose={() => setIsMobileSidebarOpen(false)}
-                isCollapsed={isSidebarCollapsed}
-                onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
             />
 
             {/* Main Content */}
-            <div
-                className={`transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'
-                    }`}
-            >
+            <div className="lg:ml-64 transition-all duration-300">
                 {/* Header */}
-                <Header
-                    onMenuClick={() => setIsMobileSidebarOpen(true)}
-                    isSidebarCollapsed={isSidebarCollapsed}
-                />
+                <Header onMenuClick={() => setIsMobileSidebarOpen(true)} />
 
                 {/* Dashboard Content */}
                 <main className="p-6">

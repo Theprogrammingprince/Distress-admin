@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
+import ProductEditor from './pages/ProductEditor';
 import ProductApprovals from './pages/ProductApprovals';
 import ComingSoonPage from './pages/ComingSoonPage';
 import './index.css';
 
 function App() {
-  const [currentPath, setCurrentPath] = useState('/');
-  const [activeNavItem, setActiveNavItem] = useState('1');
+  const [currentPath, setCurrentPath] = useState('/products');
+  const [activeNavItem, setActiveNavItem] = useState('2');
 
   const handleNavigation = (id: string, path: string) => {
     setActiveNavItem(id);
@@ -19,18 +20,11 @@ function App() {
       case '/':
         return <Dashboard activeNavItem={activeNavItem} onNavItemClick={handleNavigation} />;
       case '/products':
+        return <ProductEditor activeNavItem={activeNavItem} onNavItemClick={handleNavigation} />;
+      case '/product-list':
         return <Products activeNavItem={activeNavItem} onNavItemClick={handleNavigation} />;
       case '/product-approvals':
         return <ProductApprovals />;
-      case '/payments':
-        return (
-          <ComingSoonPage
-            activeNavItem={activeNavItem}
-            onNavItemClick={handleNavigation}
-            title="Payments"
-            description="Payment management features are coming soon. Track transactions, process refunds, and manage payment methods."
-          />
-        );
       case '/orders':
         return (
           <ComingSoonPage
@@ -40,35 +34,62 @@ function App() {
             description="Advanced order management features are coming soon. View order details, update statuses, and manage fulfillment."
           />
         );
-      case '/chat':
+      case '/statistics':
         return (
           <ComingSoonPage
             activeNavItem={activeNavItem}
             onNavItemClick={handleNavigation}
-            title="Chat"
-            description="Live chat support features are coming soon. Communicate with customers in real-time."
+            title="Statistics"
+            description="Statistics and analytics features are coming soon. Track performance metrics and insights."
           />
         );
-      case '/mail':
+      case '/reviews':
         return (
           <ComingSoonPage
             activeNavItem={activeNavItem}
             onNavItemClick={handleNavigation}
-            title="Mail"
-            description="Email management features are coming soon. Send, receive, and organize customer communications."
+            title="Reviews"
+            description="Review management features are coming soon. Monitor and respond to customer feedback."
           />
         );
-      case '/calendar':
+      case '/customers':
         return (
           <ComingSoonPage
             activeNavItem={activeNavItem}
             onNavItemClick={handleNavigation}
-            title="Calendar"
-            description="Calendar and scheduling features are coming soon. Manage appointments, events, and reminders."
+            title="Customers"
+            description="Customer management features are coming soon. View and manage customer information."
+          />
+        );
+      case '/transactions':
+        return (
+          <ComingSoonPage
+            activeNavItem={activeNavItem}
+            onNavItemClick={handleNavigation}
+            title="Transactions"
+            description="Transaction management features are coming soon. Track and manage all transactions."
+          />
+        );
+      case '/settings':
+        return (
+          <ComingSoonPage
+            activeNavItem={activeNavItem}
+            onNavItemClick={handleNavigation}
+            title="Settings"
+            description="Settings features are coming soon. Configure your application preferences."
+          />
+        );
+      case '/profile':
+        return (
+          <ComingSoonPage
+            activeNavItem={activeNavItem}
+            onNavItemClick={handleNavigation}
+            title="Profile"
+            description="Profile management features are coming soon. Update your personal information."
           />
         );
       default:
-        return <Dashboard activeNavItem={activeNavItem} onNavItemClick={handleNavigation} />;
+        return <ProductEditor activeNavItem={activeNavItem} onNavItemClick={handleNavigation} />;
     }
   };
 
