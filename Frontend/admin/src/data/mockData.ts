@@ -10,11 +10,12 @@ export const currentUser = {
 export const navigationItems: NavItem[] = [
     { id: '1', label: 'Dashboard', icon: 'LayoutDashboard', path: '/' },
     { id: '2', label: 'Products', icon: 'Package', path: '/products' },
-    { id: '3', label: 'Payments', icon: 'CreditCard', path: '/payments' },
-    { id: '4', label: 'Orders', icon: 'ShoppingBag', path: '/orders' },
-    { id: '5', label: 'Chat', icon: 'MessageCircle', path: '/chat' },
-    { id: '6', label: 'Mail', icon: 'Mail', path: '/mail' },
-    { id: '7', label: 'Calendar', icon: 'Calendar', path: '/calendar' },
+    { id: '3', label: 'Product Approvals', icon: 'ClipboardCheck', path: '/product-approvals' },
+    { id: '4', label: 'Payments', icon: 'CreditCard', path: '/payments' },
+    { id: '5', label: 'Orders', icon: 'ShoppingBag', path: '/orders' },
+    { id: '6', label: 'Chat', icon: 'MessageCircle', path: '/chat' },
+    { id: '7', label: 'Mail', icon: 'Mail', path: '/mail' },
+    { id: '8', label: 'Calendar', icon: 'Calendar', path: '/calendar' },
 ];
 
 export const statCards: StatCard[] = [

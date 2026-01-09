@@ -1,6 +1,7 @@
 import {
     LayoutDashboard,
     Package,
+    ClipboardCheck,
     CreditCard,
     ShoppingBag,
     MessageCircle,
@@ -17,6 +18,7 @@ import { navigationItems } from '../../data/mockData';
 const iconMap: { [key: string]: React.ElementType } = {
     LayoutDashboard,
     Package,
+    ClipboardCheck,
     CreditCard,
     ShoppingBag,
     MessageCircle,
