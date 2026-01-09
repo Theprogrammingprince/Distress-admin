@@ -8,7 +8,8 @@ import {
     DollarSign,
     Settings,
     User,
-    Menu,
+    X,
+    Menu as MenuIcon,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -38,7 +39,6 @@ export default function Sidebar({
 }: SidebarProps) {
     return (
         <>
-            {/* Mobile Overlay */}
             {isMobileOpen && (
                 <div
                     className="fixed inset-0 bg-black/50 z-40 lg:hidden"
@@ -46,7 +46,6 @@ export default function Sidebar({
                 />
             )}
 
-            {/* Sidebar */}
             <aside
                 className={`
           fixed top-0 left-0 h-screen bg-white border-r border-gray-200 z-50
@@ -55,30 +54,27 @@ export default function Sidebar({
           flex flex-col
         `}
             >
-                {/* Logo Section */}
-                <div className="h-20 flex items-center justify-between px-6 border-b border-gray-200">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                            <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <div className="h-20 flex items-center justify-between px-6 border-b border-gray-100">
+                    <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 bg-blue-600 rounded-md flex items-center justify-center">
+                            <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                                 <path d="M12 2L2 7l10 5 10-5-10-5z" />
                                 <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
                             </svg>
                         </div>
-                        <span className="text-xl font-bold text-gray-900">Starpath</span>
+                        <span className="text-lg font-bold text-gray-900">Starpath</span>
                     </div>
 
-                    {/* Mobile Menu Button */}
                     <button
                         onClick={onMobileClose}
-                        className="lg:hidden p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                        className="lg:hidden p-1 hover:bg-gray-100 rounded transition-colors"
                     >
-                        <Menu className="w-5 h-5 text-gray-600" />
+                        <MenuIcon className="w-5 h-5 text-gray-500" />
                     </button>
                 </div>
 
-                {/* Navigation */}
-                <nav className="flex-1 px-4 py-6 overflow-y-auto">
-                    <ul className="space-y-1">
+                <nav className="flex-1 px-3 py-4 overflow-y-auto">
+                    <ul className="space-y-0.5">
                         {navItems.map((item) => {
                             const IconComponent = item.icon;
                             const isActive = activeItem === item.id;
@@ -93,15 +89,15 @@ export default function Sidebar({
                                             }
                                         }}
                                         className={`
-                      w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium text-sm
-                      transition-all duration-200
+                      w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium
+                      transition-all duration-150
                       ${isActive
                                                 ? 'bg-blue-50 text-blue-600'
                                                 : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                             }
                     `}
                                     >
-                                        <IconComponent className="w-5 h-5 flex-shrink-0" />
+                                        <IconComponent className="w-[18px] h-[18px] flex-shrink-0" />
                                         <span className="flex-1 text-left">{item.label}</span>
                                     </button>
                                 </li>
