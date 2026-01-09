@@ -7,15 +7,8 @@ interface HeaderProps {
 }
 
 export default function Header({ onMenuClick, isSidebarCollapsed }: HeaderProps) {
-    const getGreeting = () => {
-        const hour = new Date().getHours();
-        if (hour < 12) return 'Good Morning';
-        if (hour < 18) return 'Good Afternoon';
-        return 'Good Evening';
-    };
-
     return (
-        <header className="sticky top-0 z-30 h-20 bg-white border-b border-gray-100 flex items-center justify-between">
+        <header className="sticky top-0 z-30 h-20 bg-white border-b border-gray-200 flex items-center justify-between">
             <div className={`flex items-center gap-6 transition-all duration-300 ${isSidebarCollapsed ? 'lg:pl-8' : 'lg:pl-8'} px-6`}>
                 {/* Mobile Menu Button */}
                 <button
@@ -27,10 +20,10 @@ export default function Header({ onMenuClick, isSidebarCollapsed }: HeaderProps)
 
                 {/* Greeting */}
                 <div>
-                    <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                        {getGreeting()},{' '}
-                        <span className="text-emerald-600">{currentUser.name.split(' ')[0]}</span>{' '}
-                        <span className="text-2xl">👋</span>
+                    <h1 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                        Hello,{' '}
+                        <span className="text-gray-900">{currentUser.name.split(' ')[0]}</span>{' '}
+                        <span className="text-xl">👋</span>
                     </h1>
                 </div>
             </div>
@@ -43,7 +36,7 @@ export default function Header({ onMenuClick, isSidebarCollapsed }: HeaderProps)
                     <input
                         type="text"
                         placeholder="Search your product"
-                        className="w-72 h-10 pl-10 pr-4 bg-gray-50 border border-gray-100 rounded-lg text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/20 focus:bg-white transition-all"
+                        className="w-80 h-11 pl-10 pr-4 bg-gray-50 border-0 rounded-lg text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:bg-white transition-all"
                     />
                 </div>
 

@@ -2,8 +2,8 @@ import type { NavItem, StatCard, SalesData, ShipmentStatus, Order, SalesOverview
 
 export const currentUser = {
     id: '1',
-    name: 'Admin User',
-    email: 'admin@distress.com',
+    name: 'Bella Chao',
+    email: 'bella.chao@distress.com',
     role: 'Super Admin',
 };
 

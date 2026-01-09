@@ -4,19 +4,29 @@
 @theme {
   --font-sans: 'Inter', system-ui, sans-serif;
 
-  /* Custom colors */
-  --color-primary: #3b82f6;
-  --color-primary-dark: #2563eb;
+  /* Custom colors - matched to reference design */
+  --color-primary: #10b981;
+  --color-primary-dark: #059669;
   --color-secondary: #64748b;
-  --color-success: #22c55e;
+  --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-danger: #ef4444;
-  --color-sidebar-bg: #f8fafc;
+  --color-sidebar-bg: #10b981;
   --color-card-bg: #ffffff;
-  --color-border: #e2e8f0;
-  --color-text-primary: #1e293b;
-  --color-text-secondary: #64748b;
-  --color-text-muted: #94a3b8;
+  --color-border: #e5e7eb;
+  --color-text-primary: #111827;
+  --color-text-secondary: #6b7280;
+  --color-text-muted: #9ca3af;
+
+  /* Stat card colors */
+  --color-stat-purple: #8b5cf6;
+  --color-stat-purple-light: #f3e8ff;
+  --color-stat-blue: #3b82f6;
+  --color-stat-blue-light: #dbeafe;
+  --color-stat-orange: #f97316;
+  --color-stat-orange-light: #ffedd5;
+  --color-stat-green: #10b981;
+  --color-stat-green-light: #d1fae5;
 }
 
 /* Base styles */
@@ -28,8 +38,8 @@
 
 body {
   font-family: 'Inter', system-ui, sans-serif;
-  background-color: #f1f5f9;
-  color: #1e293b;
+  background-color: #f9fafb;
+  color: #111827;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -41,16 +51,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #f9fafb;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #d1d5db;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #9ca3af;
 }
 
 /* Smooth transitions */
@@ -60,7 +70,12 @@ body {
 
 /* Card shadow */
 .card-shadow {
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+/* Enhanced card shadow */
+.card-shadow-lg {
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
 /* Gradient backgrounds */
@@ -74,4 +89,55 @@ body {
 
 .gradient-cyan {
   background: linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%);
+}
+
+.gradient-green {
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+}
+
+/* Status badges */
+.status-badge-pending {
+  background-color: #fce7f3;
+  color: #ec4899;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-badge-completed {
+  background-color: #d1fae5;
+  color: #059669;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Chart tooltip custom styles */
+.recharts-tooltip-wrapper {
+  outline: none;
+}
+
+.custom-tooltip {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 8px 12px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+/* Table styles */
+.table-header {
+  background-color: #f9fafb;
+  font-weight: 600;
+  font-size: 13px;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.table-row:hover {
+  background-color: #f9fafb;
+  transition: background-color 0.15s ease-in-out;
 }

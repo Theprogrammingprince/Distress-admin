@@ -31,6 +31,7 @@ export interface ShipmentStatus {
     status: string;
     percentage: number;
     color: string;
+    [key: string]: string | number; // Index signature for recharts compatibility
 }
 
 export interface Order {
