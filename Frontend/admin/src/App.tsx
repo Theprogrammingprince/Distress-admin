@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import Dashboard from './pages/Dashboard';
-import Products from './pages/Products';
 import ProductEditor from './pages/ProductEditor';
-import ProductApprovals from './pages/ProductApprovals';
+import Orders from './pages/Orders';
+import Statistics from './pages/Statistics';
+import Reviews from './pages/Reviews';
+import Customers from './pages/Customers';
+import Transactions from './pages/Transactions';
 import ComingSoonPage from './pages/ComingSoonPage';
 import './index.css';
 
@@ -21,55 +24,16 @@ function App() {
         return <Dashboard activeNavItem={activeNavItem} onNavItemClick={handleNavigation} />;
       case '/products':
         return <ProductEditor activeNavItem={activeNavItem} onNavItemClick={handleNavigation} />;
-      case '/product-list':
-        return <Products activeNavItem={activeNavItem} onNavItemClick={handleNavigation} />;
-      case '/product-approvals':
-        return <ProductApprovals />;
       case '/orders':
-        return (
-          <ComingSoonPage
-            activeNavItem={activeNavItem}
-            onNavItemClick={handleNavigation}
-            title="Orders"
-            description="Advanced order management features are coming soon. View order details, update statuses, and manage fulfillment."
-          />
-        );
+        return <Orders activeNavItem={activeNavItem} onNavItemClick={handleNavigation} />;
       case '/statistics':
-        return (
-          <ComingSoonPage
-            activeNavItem={activeNavItem}
-            onNavItemClick={handleNavigation}
-            title="Statistics"
-            description="Statistics and analytics features are coming soon. Track performance metrics and insights."
-          />
-        );
+        return <Statistics activeNavItem={activeNavItem} onNavItemClick={handleNavigation} />;
       case '/reviews':
-        return (
-          <ComingSoonPage
-            activeNavItem={activeNavItem}
-            onNavItemClick={handleNavigation}
-            title="Reviews"
-            description="Review management features are coming soon. Monitor and respond to customer feedback."
-          />
-        );
+        return <Reviews activeNavItem={activeNavItem} onNavItemClick={handleNavigation} />;
       case '/customers':
-        return (
-          <ComingSoonPage
-            activeNavItem={activeNavItem}
-            onNavItemClick={handleNavigation}
-            title="Customers"
-            description="Customer management features are coming soon. View and manage customer information."
-          />
-        );
+        return <Customers activeNavItem={activeNavItem} onNavItemClick={handleNavigation} />;
       case '/transactions':
-        return (
-          <ComingSoonPage
-            activeNavItem={activeNavItem}
-            onNavItemClick={handleNavigation}
-            title="Transactions"
-            description="Transaction management features are coming soon. Track and manage all transactions."
-          />
-        );
+        return <Transactions activeNavItem={activeNavItem} onNavItemClick={handleNavigation} />;
       case '/settings':
         return (
           <ComingSoonPage
