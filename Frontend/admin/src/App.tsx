@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
+import ProductApprovals from './pages/ProductApprovals';
 import ComingSoonPage from './pages/ComingSoonPage';
 import './index.css';
 
@@ -19,6 +20,8 @@ function App() {
         return <Dashboard activeNavItem={activeNavItem} onNavItemClick={handleNavigation} />;
       case '/products':
         return <Products activeNavItem={activeNavItem} onNavItemClick={handleNavigation} />;
+      case '/product-approvals':
+        return <ProductApprovals />;
       case '/payments':
         return (
           <ComingSoonPage
