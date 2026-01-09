@@ -41,16 +41,16 @@ export default function Dashboard({ activeNavItem, onNavItemClick }: DashboardPr
                 />
 
                 {/* Dashboard Content */}
-                <main className="p-4 sm:p-6 lg:p-8">
+                <main className="p-6">
                     {/* Stats Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-6">
                         {statCards.map((stat) => (
                             <StatCard key={stat.id} data={stat} />
                         ))}
                     </div>
 
                     {/* Charts Row */}
-                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6 mb-6 lg:mb-8">
+                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-6">
                         {/* Sales Statistic - Takes 2 columns on xl */}
                         <div className="xl:col-span-2">
                             <SalesStatistic />
@@ -63,7 +63,7 @@ export default function Dashboard({ activeNavItem, onNavItemClick }: DashboardPr
                     </div>
 
                     {/* Bottom Row */}
-                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6">
+                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
                         {/* Recent Orders - Takes 2 columns on xl */}
                         <div className="xl:col-span-2">
                             <RecentOrders />
