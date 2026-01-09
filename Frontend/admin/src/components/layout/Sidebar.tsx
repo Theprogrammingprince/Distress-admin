@@ -1,47 +1,40 @@
 import {
     LayoutDashboard,
     Package,
-    ClipboardCheck,
-    CreditCard,
-    ShoppingBag,
-    MessageCircle,
-    Mail,
-    Calendar,
+    ShoppingCart,
+    BarChart3,
+    Star,
+    Users,
+    DollarSign,
     Settings,
-    LogOut,
-    X,
-    ChevronRight,
-    ChevronLeft,
+    User,
+    Menu,
 } from 'lucide-react';
-import { navigationItems } from '../../data/mockData';
-
-const iconMap: { [key: string]: React.ElementType } = {
-    LayoutDashboard,
-    Package,
-    ClipboardCheck,
-    CreditCard,
-    ShoppingBag,
-    MessageCircle,
-    Mail,
-    Calendar,
-};
 
 interface SidebarProps {
     activeItem: string;
     onItemClick: (id: string, path: string) => void;
     isMobileOpen: boolean;
     onMobileClose: () => void;
-    isCollapsed: boolean;
-    onToggleCollapse: () => void;
 }
+
+const navItems = [
+    { id: '1', label: 'Dashboard', icon: LayoutDashboard, path: '/' },
+    { id: '2', label: 'Products', icon: Package, path: '/products' },
+    { id: '3', label: 'Orders', icon: ShoppingCart, path: '/orders' },
+    { id: '4', label: 'Statistics', icon: BarChart3, path: '/statistics' },
+    { id: '5', label: 'Reviews', icon: Star, path: '/reviews' },
+    { id: '6', label: 'Customers', icon: Users, path: '/customers' },
+    { id: '7', label: 'Transactions', icon: DollarSign, path: '/transactions' },
+    { id: '8', label: 'Settings', icon: Settings, path: '/settings' },
+    { id: '9', label: 'Profile', icon: User, path: '/profile' },
+];
 
 export default function Sidebar({
     activeItem,
     onItemClick,
     isMobileOpen,
     onMobileClose,
-    isCollapsed,
-    onToggleCollapse,
 }: SidebarProps) {
     return (
         <>
@@ -56,52 +49,38 @@ export default function Sidebar({
             {/* Sidebar */}
             <aside
                 className={`
-          fixed top-0 left-0 h-screen bg-gradient-to-b from-emerald-500 to-teal-600 z-50
-          transition-all duration-300 ease-in-out
-          ${isCollapsed ? 'w-20' : 'w-64'}
+          fixed top-0 left-0 h-screen bg-white border-r border-gray-200 z-50
+          transition-all duration-300 ease-in-out w-64
           ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-          flex flex-col shadow-xl
+          flex flex-col
         `}
             >
                 {/* Logo Section */}
-                <div className={`h-20 flex items-center border-b border-white/10 ${isCollapsed ? 'justify-center px-4' : 'justify-between px-6'}`}>
-                    {!isCollapsed && (
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                                <span className="text-2xl font-bold text-white">D</span>
-                            </div>
-                            <span className="text-xl font-bold text-white">Distress</span>
+                <div className="h-20 flex items-center justify-between px-6 border-b border-gray-200">
+                    <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                            <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                                <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
+                            </svg>
                         </div>
-                    )}
+                        <span className="text-xl font-bold text-gray-900">Starpath</span>
+                    </div>
 
-                    {isCollapsed && (
-                        <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                            <span className="text-2xl font-bold text-white">D</span>
-                        </div>
-                    )}
-
-                    {/* Toggle Button - Desktop Only */}
-                    <button
-                        onClick={onToggleCollapse}
-                        className={`hidden lg:flex items-center justify-center w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors ${isCollapsed ? 'absolute -right-4 top-6 bg-emerald-600 hover:bg-emerald-700 shadow-lg' : ''}`}
-                    >
-                        {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-                    </button>
-
-                    {/* Close Button - Mobile Only */}
+                    {/* Mobile Menu Button */}
                     <button
                         onClick={onMobileClose}
-                        className="lg:hidden p-1 hover:bg-white/10 rounded transition-colors"
+                        className="lg:hidden p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
                     >
-                        <X className="w-5 h-5 text-white" />
+                        <Menu className="w-5 h-5 text-gray-600" />
                     </button>
                 </div>
 
                 {/* Navigation */}
-                <nav className="flex-1 px-3 py-6 overflow-y-auto overflow-x-hidden">
+                <nav className="flex-1 px-4 py-6 overflow-y-auto">
                     <ul className="space-y-1">
-                        {navigationItems.map((item) => {
-                            const IconComponent = iconMap[item.icon];
+                        {navItems.map((item) => {
+                            const IconComponent = item.icon;
                             const isActive = activeItem === item.id;
 
                             return (
@@ -114,62 +93,22 @@ export default function Sidebar({
                                             }
                                         }}
                                         className={`
-                      w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm
-                      transition-all duration-200 group relative
+                      w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium text-sm
+                      transition-all duration-200
                       ${isActive
-                                                ? 'bg-white text-emerald-600 shadow-lg shadow-emerald-900/20'
-                                                : 'text-white/80 hover:bg-white/10 hover:text-white'
+                                                ? 'bg-blue-50 text-blue-600'
+                                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                             }
-                      ${isCollapsed ? 'justify-center' : ''}
                     `}
-                                        title={isCollapsed ? item.label : undefined}
                                     >
-                                        {IconComponent && (
-                                            <IconComponent className="w-5 h-5 flex-shrink-0" />
-                                        )}
-                                        {!isCollapsed && (
-                                            <>
-                                                <span className="flex-1 text-left">{item.label}</span>
-                                                {isActive && (
-                                                    <ChevronRight className="w-4 h-4" />
-                                                )}
-                                            </>
-                                        )}
-
-                                        {/* Tooltip for collapsed state */}
-                                        {isCollapsed && (
-                                            <span className="absolute left-full ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
-                                                {item.label}
-                                            </span>
-                                        )}
+                                        <IconComponent className="w-5 h-5 flex-shrink-0" />
+                                        <span className="flex-1 text-left">{item.label}</span>
                                     </button>
                                 </li>
                             );
                         })}
                     </ul>
                 </nav>
-
-                {/* Bottom Section */}
-                <div className="px-3 pb-6 space-y-1 border-t border-white/10 pt-4">
-                    <button className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-white/80 hover:bg-white/10 hover:text-white transition-all duration-200 group ${isCollapsed ? 'justify-center' : ''}`}>
-                        <Settings className="w-5 h-5 flex-shrink-0" />
-                        {!isCollapsed && <span className="flex-1 text-left">Settings</span>}
-                        {isCollapsed && (
-                            <span className="absolute left-full ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
-                                Settings
-                            </span>
-                        )}
-                    </button>
-                    <button className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-white/80 hover:bg-white/10 hover:text-white transition-all duration-200 group ${isCollapsed ? 'justify-center' : ''}`}>
-                        <LogOut className="w-5 h-5 flex-shrink-0" />
-                        {!isCollapsed && <span className="flex-1 text-left">Log Out</span>}
-                        {isCollapsed && (
-                            <span className="absolute left-full ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
-                                Log Out
-                            </span>
-                        )}
-                    </button>
-                </div>
             </aside>
         </>
     );
