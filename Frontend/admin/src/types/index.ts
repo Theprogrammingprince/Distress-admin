@@ -63,3 +63,65 @@ export interface Product {
     status: 'In Stock' | 'Low Stock' | 'Out of Stock';
     image?: string;
 }
+
+// Product Approval Types
+export interface ProductApprovalRequest {
+    id: string;
+    productId: string;
+    seller: {
+        id: string;
+        name: string;
+        email: string;
+        phone: string;
+        rating: number;
+        totalSales: number;
+        joinDate: string;
+        verified: boolean;
+    };
+    product: {
+        name: string;
+        description: string;
+        category: string;
+        price: number;
+        images: string[];
+        quantity: number;
+        condition: 'new' | 'like_new' | 'good' | 'fair' | 'poor';
+        usageDuration: {
+            value: number;
+            unit: 'days' | 'months' | 'years';
+        };
+    };
+    verification: {
+        receiptImages: string[];
+        hasReceipt: boolean;
+        receiptVerified: boolean;
+        location: {
+            country: string;
+            state: string;
+            city: string;
+            zipCode: string;
+            coordinates?: {
+                lat: number;
+                lng: number;
+            };
+        };
+        locationVerified: boolean;
+    };
+    status: 'pending' | 'approved' | 'rejected' | 'needs_info';
+    submittedAt: string;
+    reviewedAt?: string;
+    reviewedBy?: string;
+    rejectionReason?: string;
+    requestedInfo?: string;
+    securityChecks: {
+        imagesReviewed: boolean;
+        descriptionReviewed: boolean;
+        priceVerified: boolean;
+        sellerVerified: boolean;
+        receiptVerified: boolean;
+        locationVerified: boolean;
+        conditionVerified: boolean;
+        usageDurationVerified: boolean;
+    };
+    adminNotes: string[];
+}
