@@ -8,7 +8,6 @@ import {
     DollarSign,
     Settings,
     User,
-    X,
     Menu as MenuIcon,
 } from 'lucide-react';
 
