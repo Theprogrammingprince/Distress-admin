@@ -84,19 +84,27 @@ serve(async (req) => {
 
       const { data: reviews, error, count } = await supabaseAdmin
         .from("product_reviews")
-        .select(`
-          *,
-          reviewer:profiles!product_reviews_reviewer_id_fkey(id, full_name, email),
-          product:products(id, name, seller_id)
-        `, { count: "exact" })
+        .select("*", { count: "exact" })
         .order("created_at", { ascending: false })
         .range(offset, offset + limit - 1);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching product reviews:", error);
+        // Return empty list if table doesn't exist
+        return new Response(
+          JSON.stringify({
+            reviews: [],
+            total: 0,
+            page,
+            totalPages: 0,
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
 
       return new Response(
         JSON.stringify({
-          reviews,
+          reviews: reviews || [],
           total: count || 0,
           page,
           totalPages: Math.ceil((count || 0) / limit),
@@ -113,19 +121,27 @@ serve(async (req) => {
 
       const { data: reviews, error, count } = await supabaseAdmin
         .from("seller_reviews")
-        .select(`
-          *,
-          reviewer:profiles!seller_reviews_reviewer_id_fkey(id, full_name, email),
-          seller:profiles!seller_reviews_seller_id_fkey(id, full_name, email, seller_business_name)
-        `, { count: "exact" })
+        .select("*", { count: "exact" })
         .order("created_at", { ascending: false })
         .range(offset, offset + limit - 1);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching seller reviews:", error);
+        // Return empty list if table doesn't exist
+        return new Response(
+          JSON.stringify({
+            reviews: [],
+            total: 0,
+            page,
+            totalPages: 0,
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
 
       return new Response(
         JSON.stringify({
-          reviews,
+          reviews: reviews || [],
           total: count || 0,
           page,
           totalPages: Math.ceil((count || 0) / limit),
@@ -134,7 +150,89 @@ serve(async (req) => {
       );
     }
 
-    // GET /reviews/stats - Get review statistics
+    // GET /reviews/products/stats - Get product review statistics
+    if (method === "GET" && path === "/products/stats") {
+      const { data: reviews, count, error } = await supabaseAdmin
+        .from("product_reviews")
+        .select("id, rating, is_flagged", { count: "exact" });
+
+      if (error) {
+        console.error("Error fetching product review stats:", error);
+        // Return empty stats if table doesn't exist
+        return new Response(
+          JSON.stringify({
+            total: 0,
+            pending: 0,
+            approved: 0,
+            rejected: 0,
+            flagged: 0,
+            avgRating: 0,
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const avgRating = reviews?.length
+        ? reviews.reduce((sum: number, r: { rating: number }) => sum + (r.rating || 0), 0) / reviews.length
+        : 0;
+
+      const flaggedCount = reviews?.filter((r: { is_flagged: boolean }) => r.is_flagged).length || 0;
+
+      return new Response(
+        JSON.stringify({
+          total: count || 0,
+          pending: 0,
+          approved: count || 0,
+          rejected: 0,
+          flagged: flaggedCount,
+          avgRating: parseFloat(avgRating.toFixed(1)),
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // GET /reviews/sellers/stats - Get seller review statistics
+    if (method === "GET" && path === "/sellers/stats") {
+      const { data: reviews, count, error } = await supabaseAdmin
+        .from("seller_reviews")
+        .select("id, rating, is_flagged", { count: "exact" });
+
+      if (error) {
+        console.error("Error fetching seller review stats:", error);
+        // Return empty stats if table doesn't exist
+        return new Response(
+          JSON.stringify({
+            total: 0,
+            pending: 0,
+            approved: 0,
+            rejected: 0,
+            flagged: 0,
+            avgRating: 0,
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const avgRating = reviews?.length
+        ? reviews.reduce((sum: number, r: { rating: number }) => sum + (r.rating || 0), 0) / reviews.length
+        : 0;
+
+      const flaggedCount = reviews?.filter((r: { is_flagged: boolean }) => r.is_flagged).length || 0;
+
+      return new Response(
+        JSON.stringify({
+          total: count || 0,
+          pending: 0,
+          approved: count || 0,
+          rejected: 0,
+          flagged: flaggedCount,
+          avgRating: parseFloat(avgRating.toFixed(1)),
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // GET /reviews/stats - Get combined review statistics (legacy)
     if (method === "GET" && path === "/stats") {
       const [productReviews, sellerReviews, flaggedReviews] = await Promise.all([
         supabaseAdmin.from("product_reviews").select("id, rating", { count: "exact" }),
@@ -143,11 +241,11 @@ serve(async (req) => {
       ]);
 
       const avgProductRating = productReviews.data?.length
-        ? productReviews.data.reduce((sum, r) => sum + (r.rating || 0), 0) / productReviews.data.length
+        ? productReviews.data.reduce((sum: number, r: { rating: number }) => sum + (r.rating || 0), 0) / productReviews.data.length
         : 0;
 
       const avgSellerRating = sellerReviews.data?.length
-        ? sellerReviews.data.reduce((sum, r) => sum + (r.rating || 0), 0) / sellerReviews.data.length
+        ? sellerReviews.data.reduce((sum: number, r: { rating: number }) => sum + (r.rating || 0), 0) / sellerReviews.data.length
         : 0;
 
       return new Response(
