@@ -4,7 +4,8 @@
   "description": "Supabase Edge Functions for Distress Admin Dashboard",
   "scripts": {
     "deploy": "npm run deploy:all",
-    "deploy:all": "supabase functions deploy admin && supabase functions deploy sellers && supabase functions deploy payments && supabase functions deploy reviews",
+    "deploy:all": "supabase functions deploy auth && supabase functions deploy admin && supabase functions deploy sellers && supabase functions deploy payments && supabase functions deploy reviews",
+    "deploy:auth": "supabase functions deploy auth --no-verify-jwt",
     "deploy:admin": "supabase functions deploy admin --no-verify-jwt",
     "deploy:sellers": "supabase functions deploy sellers --no-verify-jwt",
     "deploy:payments": "supabase functions deploy payments --no-verify-jwt",

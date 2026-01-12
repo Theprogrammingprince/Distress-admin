@@ -10,7 +10,14 @@ if (!supabaseAnonKey) {
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export async function getAuthHeaders() {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session }, error } = await supabase.auth.getSession();
+  
+  console.log('🔐 getAuthHeaders - Session:', session ? 'exists' : 'null', 'Error:', error);
+  console.log('🔑 Access token:', session?.access_token ? `${session.access_token.substring(0, 20)}...` : 'MISSING');
+  
+  if (!session?.access_token) {
+    console.error('⚠️ No access token available! User may need to login again.');
+  }
   
   return {
     'Authorization': `Bearer ${session?.access_token || ''}`,

@@ -1,10 +1,19 @@
-import { Search, Sun, Bell, MessageSquare, Menu } from 'lucide-react';
+import { Search, Sun, Bell, MessageSquare, Menu, LogOut, User, ChevronDown } from 'lucide-react';
+import { useState } from 'react';
+import { supabase } from '../../lib/supabase';
 
 interface HeaderProps {
     onMenuClick: () => void;
 }
 
 export default function Header({ onMenuClick }: HeaderProps) {
+    const [showProfileMenu, setShowProfileMenu] = useState(false);
+
+    async function handleLogout() {
+        await supabase.auth.signOut();
+        window.location.reload();
+    }
+
     return (
         <header className="sticky top-0 z-30 h-20 bg-white border-b border-gray-100 flex items-center justify-between px-6">
             <div className="flex items-center gap-4">
@@ -40,24 +49,49 @@ export default function Header({ onMenuClick }: HeaderProps) {
                     <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
                 </button>
 
-                <button className="flex items-center gap-2 ml-2">
-                    <img
-                        src="/img (4).jpg"
-                        alt="User"
-                        className="w-9 h-9 rounded-full object-cover ring-2 ring-gray-100"
-                        onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="36" height="36"%3E%3Crect width="36" height="36" fill="%234F46E5" rx="18"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="14" font-weight="bold"%3EU%3C/text%3E%3C/svg%3E';
-                        }}
-                    />
-                </button>
+                <div className="relative ml-2">
+                    <button 
+                        onClick={() => setShowProfileMenu(!showProfileMenu)}
+                        className="flex items-center gap-2 p-1.5 hover:bg-gray-50 rounded-lg transition-colors"
+                    >
+                        <img
+                            src="/img (4).jpg"
+                            alt="User"
+                            className="w-9 h-9 rounded-full object-cover ring-2 ring-gray-100"
+                            onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="36" height="36"%3E%3Crect width="36" height="36" fill="%234F46E5" rx="18"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="14" font-weight="bold"%3EA%3C/text%3E%3C/svg%3E';
+                            }}
+                        />
+                        <ChevronDown className="w-4 h-4 text-gray-500" />
+                    </button>
 
-                <button
-                    onClick={onLogoutClick}
-                    className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
-                >
-                    Logout
-                </button>
+                    {showProfileMenu && (
+                        <>
+                            <div 
+                                className="fixed inset-0 z-40" 
+                                onClick={() => setShowProfileMenu(false)}
+                            />
+                            <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                                <div className="px-4 py-3 border-b border-gray-100">
+                                    <p className="text-sm font-semibold text-gray-900">Admin User</p>
+                                    <p className="text-xs text-gray-500 mt-0.5">john@gmail.com</p>
+                                    <span className="inline-block mt-2 px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-medium rounded">
+                                        Super Admin
+                                    </span>
+                                </div>
+                                
+                                <button
+                                    onClick={handleLogout}
+                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                                >
+                                    <LogOut className="w-4 h-4" />
+                                    <span>Sign Out</span>
+                                </button>
+                            </div>
+                        </>
+                    )}
+                </div>
             </div>
         </header>
     );

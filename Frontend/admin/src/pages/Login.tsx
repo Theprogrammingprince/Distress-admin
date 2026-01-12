@@ -14,12 +14,28 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
         setError('');
 
         try {
+            console.log('🔐 Starting login process...');
+            console.log('📧 Email:', email);
+
             const { data, error: signInError } = await supabase.auth.signInWithPassword({
                 email,
                 password,
             });
 
-            if (signInError) throw signInError;
+            console.log('✅ Sign in response:', { data, error: signInError });
+
+            if (signInError) {
+                console.error('❌ Sign in error:', signInError);
+                throw signInError;
+            }
+
+            if (!data.user) {
+                console.error('❌ No user data returned');
+                throw new Error('No user data returned from authentication');
+            }
+
+            console.log('👤 User authenticated:', data.user.id);
+            console.log('🔍 Checking user role in profiles table...');
 
             // Check if user is super_admin
             const { data: profile, error: profileError } = await supabase
@@ -28,13 +44,37 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
                 .eq('id', data.user.id)
                 .single();
 
-            if (profileError || profile?.role !== 'super_admin') {
+            console.log('📊 Profile query result:', { profile, error: profileError });
+
+            if (profileError) {
+                console.error('❌ Profile query error:', {
+                    message: profileError.message,
+                    details: profileError.details,
+                    hint: profileError.hint,
+                    code: profileError.code
+                });
+                await supabase.auth.signOut();
+                throw new Error(`Database error: ${profileError.message}. Check console for details.`);
+            }
+
+            if (!profile) {
+                console.error('❌ No profile found for user:', data.user.id);
+                await supabase.auth.signOut();
+                throw new Error('No profile found. Please contact administrator.');
+            }
+
+            console.log('👔 User role:', profile.role);
+
+            if (profile.role !== 'super_admin') {
+                console.error('❌ Access denied. User role:', profile.role);
                 await supabase.auth.signOut();
                 throw new Error('Access denied. Super admin role required.');
             }
 
+            console.log('✅ Login successful!');
             onLogin();
         } catch (err) {
+            console.error('❌ Login failed:', err);
             setError(err instanceof Error ? err.message : 'Failed to login');
         } finally {
             setLoading(false);

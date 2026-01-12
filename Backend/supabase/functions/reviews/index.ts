@@ -29,25 +29,38 @@ serve(async (req) => {
     } = await supabaseClient.auth.getUser();
 
     if (userError || !user) {
+      console.error("Auth error:", userError);
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Check if user is super_admin
-    const { data: profile, error: profileError } = await supabaseClient
+    console.log("User authenticated:", user.id);
+
+    // Check if user is super_admin using service role to bypass RLS
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    );
+
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
 
+    console.log("Profile check:", { profile, error: profileError });
+
     if (profileError || profile?.role !== "super_admin") {
+      console.error("Access denied. User role:", profile?.role);
       return new Response(JSON.stringify({ error: "Forbidden: Super admin access required" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    console.log("Super admin access granted for:", user.id);
 
     const url = new URL(req.url);
     const path = url.pathname.replace("/reviews", "");

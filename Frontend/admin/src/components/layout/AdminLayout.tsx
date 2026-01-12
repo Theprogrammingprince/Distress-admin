@@ -12,13 +12,22 @@ import {
     Bell,
     Search,
     User,
-    ShieldAlert
+    ShieldAlert,
+    LogOut,
+    ChevronDown
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { supabase } from '../../lib/supabase';
 
 const AdminLayout = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [showProfileMenu, setShowProfileMenu] = useState(false);
     const location = useLocation();
+
+    async function handleLogout() {
+        await supabase.auth.signOut();
+        window.location.reload();
+    }
 
     const menuItems = [
         { name: 'Dashboard', icon: LayoutDashboard, path: '/admin' },
@@ -160,11 +169,43 @@ const AdminLayout = () => {
                             <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full border-2 border-card"></span>
                         </button>
                         <div className="h-6 w-[1px] bg-border mx-2"></div>
-                        <div className="flex items-center gap-2 cursor-pointer hover:bg-accent p-1 pr-3 rounded-full transition-colors">
-                            <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center overflow-hidden border">
-                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=admin" alt="avatar" />
-                            </div>
-                            <span className="text-sm font-medium hidden sm:inline-block">Admin Account</span>
+                        <div className="relative">
+                            <button 
+                                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                                className="flex items-center gap-2 hover:bg-accent p-1 pr-3 rounded-full transition-colors"
+                            >
+                                <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center overflow-hidden border">
+                                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=admin" alt="avatar" />
+                                </div>
+                                <span className="text-sm font-medium hidden sm:inline-block">Admin Account</span>
+                                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                            </button>
+
+                            {showProfileMenu && (
+                                <>
+                                    <div 
+                                        className="fixed inset-0 z-40" 
+                                        onClick={() => setShowProfileMenu(false)}
+                                    />
+                                    <div className="absolute right-0 mt-2 w-56 bg-card rounded-lg shadow-lg border border-border py-2 z-50">
+                                        <div className="px-4 py-3 border-b border-border">
+                                            <p className="text-sm font-semibold">Admin User</p>
+                                            <p className="text-xs text-muted-foreground mt-0.5">john@gmail.com</p>
+                                            <span className="inline-block mt-2 px-2 py-0.5 bg-primary/10 text-primary text-xs font-medium rounded">
+                                                Super Admin
+                                            </span>
+                                        </div>
+                                        
+                                        <button
+                                            onClick={handleLogout}
+                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-500/10 transition-colors"
+                                        >
+                                            <LogOut className="w-4 h-4" />
+                                            <span>Sign Out</span>
+                                        </button>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                 </header>
