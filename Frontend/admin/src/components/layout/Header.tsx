@@ -51,6 +51,13 @@ export default function Header({ onMenuClick }: HeaderProps) {
                         }}
                     />
                 </button>
+
+                <button
+                    onClick={onLogoutClick}
+                    className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
+                >
+                    Logout
+                </button>
             </div>
         </header>
     );

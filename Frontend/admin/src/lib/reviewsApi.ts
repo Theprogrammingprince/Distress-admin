@@ -1,7 +1,7 @@
 import { getAuthHeaders } from './supabase';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://zrdnrpbhqzhmebgralku.supabase.co';
-const BASE_URL = `${SUPABASE_URL}/functions/v1`;
+const BASE_URL = `${SUPABASE_URL}/functions/v1/reviews`;
 
 interface ProductReview {
   id: string;
@@ -80,7 +80,7 @@ export async function getProductReviews(
   const headers = await getAuthHeaders();
   const statusParam = status ? `&status=${status}` : '';
   const response = await fetch(
-    `${BASE_URL}/reviews/products?page=${page}&limit=${limit}${statusParam}`,
+    `${BASE_URL}/products?page=${page}&limit=${limit}${statusParam}`,
     { headers }
   );
   
@@ -98,7 +98,7 @@ export async function getProductReviews(
 export async function getProductReviewStats(): Promise<ReviewStatsResponse> {
   const headers = await getAuthHeaders();
   const response = await fetch(
-    `${BASE_URL}/reviews/products/stats`,
+    `${BASE_URL}/products/stats`,
     { headers }
   );
   
@@ -116,7 +116,7 @@ export async function getProductReviewStats(): Promise<ReviewStatsResponse> {
 export async function approveProductReview(reviewId: string): Promise<{ message: string; review: ProductReview }> {
   const headers = await getAuthHeaders();
   const response = await fetch(
-    `${BASE_URL}/reviews/products/approve`,
+    `${BASE_URL}/products/approve`,
     {
       method: 'POST',
       headers,
@@ -138,7 +138,7 @@ export async function approveProductReview(reviewId: string): Promise<{ message:
 export async function rejectProductReview(reviewId: string, reason: string): Promise<{ message: string; review: ProductReview }> {
   const headers = await getAuthHeaders();
   const response = await fetch(
-    `${BASE_URL}/reviews/products/reject`,
+    `${BASE_URL}/products/reject`,
     {
       method: 'POST',
       headers,
@@ -160,7 +160,7 @@ export async function rejectProductReview(reviewId: string, reason: string): Pro
 export async function deleteProductReview(reviewId: string): Promise<{ message: string }> {
   const headers = await getAuthHeaders();
   const response = await fetch(
-    `${BASE_URL}/reviews/products/${reviewId}`,
+    `${BASE_URL}/products/${reviewId}`,
     {
       method: 'DELETE',
       headers,
@@ -186,7 +186,7 @@ export async function getSellerReviews(
   const headers = await getAuthHeaders();
   const statusParam = status ? `&status=${status}` : '';
   const response = await fetch(
-    `${BASE_URL}/reviews/sellers?page=${page}&limit=${limit}${statusParam}`,
+    `${BASE_URL}/sellers?page=${page}&limit=${limit}${statusParam}`,
     { headers }
   );
   
@@ -204,7 +204,7 @@ export async function getSellerReviews(
 export async function getSellerReviewStats(): Promise<ReviewStatsResponse> {
   const headers = await getAuthHeaders();
   const response = await fetch(
-    `${BASE_URL}/reviews/sellers/stats`,
+    `${BASE_URL}/sellers/stats`,
     { headers }
   );
   
@@ -222,7 +222,7 @@ export async function getSellerReviewStats(): Promise<ReviewStatsResponse> {
 export async function approveSellerReview(reviewId: string): Promise<{ message: string; review: SellerReview }> {
   const headers = await getAuthHeaders();
   const response = await fetch(
-    `${BASE_URL}/reviews/sellers/approve`,
+    `${BASE_URL}/sellers/approve`,
     {
       method: 'POST',
       headers,
@@ -244,7 +244,7 @@ export async function approveSellerReview(reviewId: string): Promise<{ message: 
 export async function rejectSellerReview(reviewId: string, reason: string): Promise<{ message: string; review: SellerReview }> {
   const headers = await getAuthHeaders();
   const response = await fetch(
-    `${BASE_URL}/reviews/sellers/reject`,
+    `${BASE_URL}/sellers/reject`,
     {
       method: 'POST',
       headers,
@@ -266,7 +266,7 @@ export async function rejectSellerReview(reviewId: string, reason: string): Prom
 export async function deleteSellerReview(reviewId: string): Promise<{ message: string }> {
   const headers = await getAuthHeaders();
   const response = await fetch(
-    `${BASE_URL}/reviews/sellers/${reviewId}`,
+    `${BASE_URL}/sellers/${reviewId}`,
     {
       method: 'DELETE',
       headers,
