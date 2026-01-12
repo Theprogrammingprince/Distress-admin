@@ -1,0 +1,28 @@
+{
+  "name": "distress-admin-backend",
+  "version": "1.0.0",
+  "description": "Supabase Edge Functions for Distress Admin Dashboard",
+  "scripts": {
+    "deploy": "npm run deploy:all",
+    "deploy:all": "supabase functions deploy admin && supabase functions deploy sellers && supabase functions deploy payments && supabase functions deploy reviews",
+    "deploy:admin": "supabase functions deploy admin --no-verify-jwt",
+    "deploy:sellers": "supabase functions deploy sellers --no-verify-jwt",
+    "deploy:payments": "supabase functions deploy payments --no-verify-jwt",
+    "deploy:reviews": "supabase functions deploy reviews --no-verify-jwt",
+    "db:push": "supabase db push",
+    "db:reset": "supabase db reset",
+    "functions:list": "supabase functions list",
+    "logs:admin": "supabase functions logs admin",
+    "logs:sellers": "supabase functions logs sellers",
+    "logs:payments": "supabase functions logs payments",
+    "logs:reviews": "supabase functions logs reviews"
+  },
+  "keywords": [
+    "supabase",
+    "edge-functions",
+    "admin",
+    "verification"
+  ],
+  "author": "",
+  "license": "ISC"
+}
