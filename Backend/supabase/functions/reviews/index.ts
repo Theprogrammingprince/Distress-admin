@@ -6,48 +6,58 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Helper function to decode JWT and extract user ID
+function getUserIdFromToken(authHeader: string | null): string | null {
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return null;
+  }
+  
+  try {
+    const token = authHeader.replace("Bearer ", "");
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    
+    // Decode the payload (second part)
+    const payload = JSON.parse(atob(parts[1]));
+    return payload.sub || null;
+  } catch (e) {
+    console.error("Failed to decode JWT:", e);
+    return null;
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      {
-        global: {
-          headers: { Authorization: req.headers.get("Authorization")! },
-        },
-      }
-    );
+    // Get user ID from JWT token
+    const authHeader = req.headers.get("Authorization");
+    const userId = getUserIdFromToken(authHeader);
+    
+    console.log("Auth header present:", !!authHeader);
+    console.log("User ID from token:", userId);
 
-    // Get current user
-    const {
-      data: { user },
-      error: userError,
-    } = await supabaseClient.auth.getUser();
-
-    if (userError || !user) {
-      console.error("Auth error:", userError);
+    if (!userId) {
+      console.error("No valid user ID in token");
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    console.log("User authenticated:", user.id);
-
-    // Check if user is super_admin using service role to bypass RLS
+    // Use service role to bypass RLS for all database operations
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
 
+    // Check if user is super_admin
     const { data: profile, error: profileError } = await supabaseAdmin
       .from("profiles")
       .select("role")
-      .eq("id", user.id)
+      .eq("id", userId)
       .single();
 
     console.log("Profile check:", { profile, error: profileError });
@@ -60,7 +70,7 @@ serve(async (req) => {
       });
     }
 
-    console.log("Super admin access granted for:", user.id);
+    console.log("Super admin access granted for:", userId);
 
     const url = new URL(req.url);
     const path = url.pathname.replace("/reviews", "");
@@ -72,7 +82,7 @@ serve(async (req) => {
       const limit = parseInt(url.searchParams.get("limit") || "20");
       const offset = (page - 1) * limit;
 
-      const { data: reviews, error, count } = await supabaseClient
+      const { data: reviews, error, count } = await supabaseAdmin
         .from("product_reviews")
         .select(`
           *,
@@ -101,7 +111,7 @@ serve(async (req) => {
       const limit = parseInt(url.searchParams.get("limit") || "20");
       const offset = (page - 1) * limit;
 
-      const { data: reviews, error, count } = await supabaseClient
+      const { data: reviews, error, count } = await supabaseAdmin
         .from("seller_reviews")
         .select(`
           *,
@@ -127,9 +137,9 @@ serve(async (req) => {
     // GET /reviews/stats - Get review statistics
     if (method === "GET" && path === "/stats") {
       const [productReviews, sellerReviews, flaggedReviews] = await Promise.all([
-        supabaseClient.from("product_reviews").select("id, rating", { count: "exact" }),
-        supabaseClient.from("seller_reviews").select("id, rating", { count: "exact" }),
-        supabaseClient.from("product_reviews").select("id", { count: "exact", head: true }).eq("is_flagged", true),
+        supabaseAdmin.from("product_reviews").select("id, rating", { count: "exact" }),
+        supabaseAdmin.from("seller_reviews").select("id, rating", { count: "exact" }),
+        supabaseAdmin.from("product_reviews").select("id", { count: "exact", head: true }).eq("is_flagged", true),
       ]);
 
       const avgProductRating = productReviews.data?.length
@@ -168,12 +178,12 @@ serve(async (req) => {
 
       const table = review_type === "product" ? "product_reviews" : "seller_reviews";
 
-      const { data: review, error } = await supabaseClient
+      const { data: review, error } = await supabaseAdmin
         .from(table)
         .update({
           is_flagged: true,
           flagged_at: new Date().toISOString(),
-          flagged_by: user.id,
+          flagged_by: userId,
           flag_reason: reason,
         })
         .eq("id", review_id)
@@ -207,12 +217,12 @@ serve(async (req) => {
 
       const table = review_type === "product" ? "product_reviews" : "seller_reviews";
 
-      const { error } = await supabaseClient
+      const { error } = await supabaseAdmin
         .from(table)
         .update({
           is_deleted: true,
           deleted_at: new Date().toISOString(),
-          deleted_by: user.id,
+          deleted_by: userId,
           deletion_reason: reason,
         })
         .eq("id", review_id);
@@ -231,8 +241,9 @@ serve(async (req) => {
       status: 404,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+    return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
