@@ -161,12 +161,12 @@ serve(async (req) => {
         // Return empty stats if table doesn't exist
         return new Response(
           JSON.stringify({
-            total: 0,
-            pending: 0,
-            approved: 0,
-            rejected: 0,
-            flagged: 0,
-            avgRating: 0,
+            total_count: 0,
+            pending_count: 0,
+            approved_count: 0,
+            rejected_count: 0,
+            flagged_count: 0,
+            average_rating: 0,
           }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
@@ -180,12 +180,12 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({
-          total: count || 0,
-          pending: 0,
-          approved: count || 0,
-          rejected: 0,
-          flagged: flaggedCount,
-          avgRating: parseFloat(avgRating.toFixed(1)),
+          total_count: count || 0,
+          pending_count: 0,
+          approved_count: count || 0,
+          rejected_count: 0,
+          flagged_count: flaggedCount,
+          average_rating: parseFloat(avgRating.toFixed(1)),
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -202,12 +202,12 @@ serve(async (req) => {
         // Return empty stats if table doesn't exist
         return new Response(
           JSON.stringify({
-            total: 0,
-            pending: 0,
-            approved: 0,
-            rejected: 0,
-            flagged: 0,
-            avgRating: 0,
+            total_count: 0,
+            pending_count: 0,
+            approved_count: 0,
+            rejected_count: 0,
+            flagged_count: 0,
+            average_rating: 0,
           }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
@@ -221,12 +221,12 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({
-          total: count || 0,
-          pending: 0,
-          approved: count || 0,
-          rejected: 0,
-          flagged: flaggedCount,
-          avgRating: parseFloat(avgRating.toFixed(1)),
+          total_count: count || 0,
+          pending_count: 0,
+          approved_count: count || 0,
+          rejected_count: 0,
+          flagged_count: flaggedCount,
+          average_rating: parseFloat(avgRating.toFixed(1)),
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
