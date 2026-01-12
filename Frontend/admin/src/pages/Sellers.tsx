@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
     Plus,
     Search,
@@ -6,55 +7,83 @@ import {
     MoreVertical,
     ChevronLeft,
     ChevronRight,
-    Eye,
     CheckCircle,
     XCircle,
-    Mail,
     Clock,
     Loader2,
     AlertCircle,
     X
 } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { getAllSellers, approveSeller, rejectSeller, type Seller } from '../lib/sellerApi';
+import { supabase } from '../lib/supabase';
+
+interface Seller {
+    id: string;
+    full_name: string;
+    email: string;
+    phone?: string;
+    role: string;
+    verification_status?: string;
+    seller_verification_status?: string;
+    business_name?: string;
+    avatar_url?: string;
+    created_at: string;
+}
+
+// Fetch sellers from Supabase
+async function fetchSellers(page: number, limit: number) {
+    const offset = (page - 1) * limit;
+    
+    const { data, error, count } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact' })
+        .eq('role', 'client')
+        .order('created_at', { ascending: false })
+        .range(offset, offset + limit - 1);
+    
+    if (error) throw error;
+    
+    return {
+        sellers: data || [],
+        total: count || 0,
+        totalPages: Math.ceil((count || 0) / limit),
+    };
+}
 
 const Sellers = () => {
+    const queryClient = useQueryClient();
     const [searchTerm, setSearchTerm] = useState('');
-    const [sellers, setSellers] = useState<Seller[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
     const [selectedSeller, setSelectedSeller] = useState<Seller | null>(null);
     const [showRejectModal, setShowRejectModal] = useState(false);
     const [rejectReason, setRejectReason] = useState('');
     const [actionLoading, setActionLoading] = useState(false);
+    const limit = 20;
 
-    useEffect(() => {
-        loadSellers();
-    }, [page]);
+    // Fetch sellers with TanStack Query
+    const { data, isLoading: loading, error, refetch } = useQuery({
+        queryKey: ['sellers', page],
+        queryFn: () => fetchSellers(page, limit),
+    });
 
-    async function loadSellers() {
-        try {
-            setLoading(true);
-            setError(null);
-            const data = await getAllSellers(undefined, page, 20);
-            setSellers(data.sellers);
-            setTotalPages(data.totalPages);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to load sellers');
-        } finally {
-            setLoading(false);
-        }
-    }
+    const sellers = data?.sellers || [];
+    const totalPages = data?.totalPages || 1;
 
     async function handleApprove(sellerId: string) {
         if (!confirm('Are you sure you want to approve this seller? They will be able to create products.')) return;
         
         try {
             setActionLoading(true);
-            await approveSeller(sellerId);
-            await loadSellers();
+            const { error: updateError } = await supabase
+                .from('profiles')
+                .update({ 
+                    seller_verification_status: 'verified',
+                    seller_verified_at: new Date().toISOString()
+                })
+                .eq('id', sellerId);
+            
+            if (updateError) throw updateError;
+            refetch();
             alert('Seller approved successfully!');
         } catch (err) {
             alert(err instanceof Error ? err.message : 'Failed to approve seller');
@@ -71,11 +100,20 @@ const Sellers = () => {
 
         try {
             setActionLoading(true);
-            await rejectSeller(selectedSeller.id, rejectReason);
+            const { error: updateError } = await supabase
+                .from('profiles')
+                .update({ 
+                    seller_verification_status: 'rejected',
+                    seller_rejection_reason: rejectReason,
+                    seller_verified_at: new Date().toISOString()
+                })
+                .eq('id', selectedSeller.id);
+            
+            if (updateError) throw updateError;
             setShowRejectModal(false);
             setRejectReason('');
             setSelectedSeller(null);
-            await loadSellers();
+            refetch();
             alert('Seller rejected successfully!');
         } catch (err) {
             alert(err instanceof Error ? err.message : 'Failed to reject seller');

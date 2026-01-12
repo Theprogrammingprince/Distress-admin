@@ -54,7 +54,7 @@ interface RejectSellerResponse {
 export async function getPendingSellers(page = 1, limit = 20): Promise<PaginatedSellersResponse> {
   const headers = await getAuthHeaders();
   const response = await fetch(
-    `${BASE_URL}/admin/sellers/pending?page=${page}&limit=${limit}`,
+    `${BASE_URL}/sellers/all?page=${page}&limit=${limit}&status=pending`,
     { headers }
   );
   
@@ -77,7 +77,7 @@ export async function getAllSellers(
   const headers = await getAuthHeaders();
   const statusParam = status ? `&status=${status}` : '';
   const response = await fetch(
-    `${BASE_URL}/admin/sellers/all?page=${page}&limit=${limit}${statusParam}`,
+    `${BASE_URL}/sellers/all?page=${page}&limit=${limit}${statusParam}`,
     { headers }
   );
   
@@ -95,7 +95,7 @@ export async function getAllSellers(
 export async function getSellerStats(): Promise<SellerStatsResponse> {
   const headers = await getAuthHeaders();
   const response = await fetch(
-    `${BASE_URL}/admin/sellers/stats`,
+    `${BASE_URL}/sellers/stats`,
     { headers }
   );
   
@@ -113,7 +113,7 @@ export async function getSellerStats(): Promise<SellerStatsResponse> {
 export async function getSeller(sellerId: string): Promise<Seller> {
   const headers = await getAuthHeaders();
   const response = await fetch(
-    `${BASE_URL}/admin/sellers/${sellerId}`,
+    `${BASE_URL}/sellers/${sellerId}`,
     { headers }
   );
   
@@ -131,7 +131,7 @@ export async function getSeller(sellerId: string): Promise<Seller> {
 export async function approveSeller(sellerId: string): Promise<ApproveSellerResponse> {
   const headers = await getAuthHeaders();
   const response = await fetch(
-    `${BASE_URL}/admin/sellers/approve`,
+    `${BASE_URL}/sellers/approve`,
     {
       method: 'POST',
       headers,
@@ -153,7 +153,7 @@ export async function approveSeller(sellerId: string): Promise<ApproveSellerResp
 export async function rejectSeller(sellerId: string, reason: string): Promise<RejectSellerResponse> {
   const headers = await getAuthHeaders();
   const response = await fetch(
-    `${BASE_URL}/admin/sellers/reject`,
+    `${BASE_URL}/sellers/reject`,
     {
       method: 'POST',
       headers,

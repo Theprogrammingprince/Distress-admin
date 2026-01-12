@@ -78,16 +78,14 @@ export async function getProductReviews(
   limit = 20
 ): Promise<PaginatedProductReviewsResponse> {
   const headers = await getAuthHeaders();
-  console.log('🔑 Product Reviews - Auth headers:', headers);
   const statusParam = status ? `&status=${status}` : '';
-  const url = `${BASE_URL}/products?page=${page}&limit=${limit}${statusParam}`;
-  console.log('📡 Fetching:', url);
-  const response = await fetch(url, { headers });
+  const response = await fetch(
+    `${BASE_URL}/products?page=${page}&limit=${limit}${statusParam}`,
+    { headers }
+  );
   
-  console.log('📥 Response status:', response.status);
   if (!response.ok) {
     const error = await response.json();
-    console.error('❌ Error response:', error);
     throw new Error(error.error || 'Failed to fetch product reviews');
   }
   
@@ -99,15 +97,13 @@ export async function getProductReviews(
  */
 export async function getProductReviewStats(): Promise<ReviewStatsResponse> {
   const headers = await getAuthHeaders();
-  console.log('🔑 Product Stats - Auth headers:', headers);
-  const url = `${BASE_URL}/products/stats`;
-  console.log('📡 Fetching:', url);
-  const response = await fetch(url, { headers });
+  const response = await fetch(
+    `${BASE_URL}/products/stats`,
+    { headers }
+  );
   
-  console.log('📥 Response status:', response.status);
   if (!response.ok) {
     const error = await response.json();
-    console.error('❌ Error response:', error);
     throw new Error(error.error || 'Failed to fetch product review statistics');
   }
   
