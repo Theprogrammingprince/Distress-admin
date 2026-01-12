@@ -6,40 +6,54 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Helper function to decode JWT and extract user ID
+function getUserIdFromToken(authHeader: string | null): string | null {
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return null;
+  }
+  
+  try {
+    const token = authHeader.replace("Bearer ", "");
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    
+    // Decode the payload (second part)
+    const payload = JSON.parse(atob(parts[1]));
+    return payload.sub || null;
+  } catch (e) {
+    console.error("Failed to decode JWT:", e);
+    return null;
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      {
-        global: {
-          headers: { Authorization: req.headers.get("Authorization")! },
-        },
-      }
-    );
+    // Get user ID from JWT token
+    const authHeader = req.headers.get("Authorization");
+    const userId = getUserIdFromToken(authHeader);
 
-    // Get current user
-    const {
-      data: { user },
-      error: userError,
-    } = await supabaseClient.auth.getUser();
-
-    if (userError || !user) {
+    if (!userId) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    // Use service role to bypass RLS for all database operations
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    );
+
     // Check if user is super_admin
-    const { data: profile, error: profileError } = await supabaseClient
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from("profiles")
       .select("role")
-      .eq("id", user.id)
+      .eq("id", userId)
       .single();
 
     if (profileError || profile?.role !== "super_admin") {
@@ -60,20 +74,10 @@ serve(async (req) => {
       const status = url.searchParams.get("status");
       const offset = (page - 1) * limit;
 
-      let query = supabaseClient
+      let query = supabaseAdmin
         .from("profiles")
-        .select(`
-          id,
-          full_name,
-          email,
-          phone,
-          avatar_url,
-          seller_verification_status,
-          seller_business_name,
-          seller_verified_at,
-          created_at
-        `, { count: "exact" })
-        .eq("role", "seller");
+        .select("*", { count: "exact" })
+        .eq("role", "client");
 
       if (status && ["verified", "pending", "unverified", "rejected"].includes(status)) {
         query = query.eq("seller_verification_status", status);
@@ -99,10 +103,10 @@ serve(async (req) => {
     // GET /sellers/stats - Get seller statistics
     if (method === "GET" && path === "/stats") {
       const [verified, pending, unverified, total] = await Promise.all([
-        supabaseClient.from("profiles").select("id", { count: "exact", head: true }).eq("role", "seller").eq("seller_verification_status", "verified"),
-        supabaseClient.from("profiles").select("id", { count: "exact", head: true }).eq("role", "seller").eq("seller_verification_status", "pending"),
-        supabaseClient.from("profiles").select("id", { count: "exact", head: true }).eq("role", "seller").eq("seller_verification_status", "unverified"),
-        supabaseClient.from("profiles").select("id", { count: "exact", head: true }).eq("role", "seller"),
+        supabaseAdmin.from("profiles").select("id", { count: "exact", head: true }).eq("role", "client").eq("seller_verification_status", "verified"),
+        supabaseAdmin.from("profiles").select("id", { count: "exact", head: true }).eq("role", "client").eq("seller_verification_status", "pending"),
+        supabaseAdmin.from("profiles").select("id", { count: "exact", head: true }).eq("role", "client").eq("seller_verification_status", "unverified"),
+        supabaseAdmin.from("profiles").select("id", { count: "exact", head: true }).eq("role", "client"),
       ]);
 
       return new Response(
@@ -120,17 +124,16 @@ serve(async (req) => {
     if (method === "GET" && path.startsWith("/") && path !== "/all" && path !== "/stats" && path !== "/pending") {
       const sellerId = path.substring(1);
 
-      const { data: seller, error } = await supabaseClient
+      const { data: seller, error } = await supabaseAdmin
         .from("profiles")
         .select("*")
         .eq("id", sellerId)
-        .eq("role", "client")
         .single();
 
       if (error) throw error;
 
       // Get seller's products
-      const { data: products } = await supabaseClient
+      const { data: products } = await supabaseAdmin
         .from("products")
         .select("id, name, verification_status, created_at")
         .eq("seller_id", sellerId)
@@ -157,16 +160,14 @@ serve(async (req) => {
         });
       }
 
-      const { data: seller, error } = await supabaseClient
+      const { data: seller, error } = await supabaseAdmin
         .from("profiles")
         .update({
-          verification_status: "approved",
-          verified_at: new Date().toISOString(),
-          verified_by: user.id,
-          rejection_reason: null,
+          seller_verification_status: "verified",
+          seller_verified_at: new Date().toISOString(),
+          seller_verified_by: userId,
         })
         .eq("id", seller_id)
-        .eq("role", "client")
         .select()
         .single();
 
@@ -195,16 +196,15 @@ serve(async (req) => {
         );
       }
 
-      const { data: seller, error } = await supabaseClient
+      const { data: seller, error } = await supabaseAdmin
         .from("profiles")
         .update({
-          verification_status: "rejected",
-          verified_at: new Date().toISOString(),
-          verified_by: user.id,
-          rejection_reason: reason,
+          seller_verification_status: "rejected",
+          seller_verified_at: new Date().toISOString(),
+          seller_verified_by: userId,
+          seller_rejection_reason: reason,
         })
         .eq("id", seller_id)
-        .eq("role", "client")
         .select()
         .single();
 
@@ -223,8 +223,9 @@ serve(async (req) => {
       status: 404,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+    return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
