@@ -1,11 +1,13 @@
+import { useState, useEffect } from 'react';
 import {
-    Users,
     ShoppingBag,
     DollarSign,
     ArrowUpRight,
     ArrowDownRight,
     Clock,
-    Activity
+    Activity,
+    Loader2,
+    AlertCircle
 } from 'lucide-react';
 import {
     XAxis,
@@ -17,6 +19,7 @@ import {
     Area
 } from 'recharts';
 import { cn } from '../lib/utils';
+import { getVerificationStats, getPendingProducts } from '../lib/adminApi';
 
 const data = [
     { name: 'Mon', revenue: 4000, orders: 24 },
@@ -34,20 +37,72 @@ const StatCard = ({ title, value, change, icon: Icon, trend }: any) => (
             <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
                 <Icon className="w-5 h-5 text-primary" />
             </div>
-            <div className={cn(
-                "flex items-center text-xs font-medium px-2 py-1 rounded-full",
-                trend === 'up' ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"
-            )}>
-                {trend === 'up' ? <ArrowUpRight className="w-3 h-3 mr-1" /> : <ArrowDownRight className="w-3 h-3 mr-1" />}
-                {change}
-            </div>
+            {trend !== 'neutral' && (
+                <div className={cn(
+                    "flex items-center text-xs font-medium px-2 py-1 rounded-full",
+                    trend === 'up' ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"
+                )}>
+                    {trend === 'up' ? <ArrowUpRight className="w-3 h-3 mr-1" /> : <ArrowDownRight className="w-3 h-3 mr-1" />}
+                    {change}
+                </div>
+            )}
         </div>
         <h3 className="text-muted-foreground text-sm font-medium">{title}</h3>
         <p className="text-2xl font-bold mt-1">{value}</p>
+        {trend === 'neutral' && <p className="text-xs text-muted-foreground mt-1">{change}</p>}
     </div>
 );
 
 const Dashboard = () => {
+    const [stats, setStats] = useState<any>(null);
+    const [recentProducts, setRecentProducts] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        loadDashboardData();
+    }, []);
+
+    async function loadDashboardData() {
+        try {
+            setLoading(true);
+            setError(null);
+            const [statsData, productsData] = await Promise.all([
+                getVerificationStats(),
+                getPendingProducts(1, 5)
+            ]);
+            setStats(statsData);
+            setRecentProducts(productsData.products);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to load dashboard data');
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[60vh]">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6 flex items-center gap-3">
+                <AlertCircle className="w-6 h-6 text-red-500" />
+                <div>
+                    <p className="font-medium text-red-500">Error loading dashboard</p>
+                    <p className="text-sm text-red-500/80 mt-1">{error}</p>
+                </div>
+                <button onClick={loadDashboardData} className="ml-auto px-4 py-2 bg-red-500/20 hover:bg-red-500/30 rounded text-sm font-medium text-red-500">
+                    Retry
+                </button>
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
             <div>
@@ -57,10 +112,10 @@ const Dashboard = () => {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard title="Total Revenue" value="$45,231.89" change="+20.1%" icon={DollarSign} trend="up" />
-                <StatCard title="Active Sellers" value="1,234" change="+12.5%" icon={Users} trend="up" />
-                <StatCard title="New Orders" value="567" change="+5.2%" icon={ShoppingBag} trend="up" />
-                <StatCard title="Escrow Held" value="$12,345" change="-2.4%" icon={Activity} trend="down" />
+                <StatCard title="Pending Products" value={stats?.pending_count || 0} change="Awaiting Review" icon={Clock} trend="neutral" />
+                <StatCard title="Approved Products" value={stats?.approved_count || 0} change="Live on Platform" icon={ShoppingBag} trend="up" />
+                <StatCard title="Rejected Products" value={stats?.rejected_count || 0} change="Needs Attention" icon={Activity} trend="down" />
+                <StatCard title="Total Products" value={stats?.total_count || 0} change="All Time" icon={DollarSign} trend="neutral" />
             </div>
 
             {/* Charts Section */}
@@ -108,30 +163,41 @@ const Dashboard = () => {
                 </div>
 
                 <div className="bg-card rounded-xl border border-border/50 p-6">
-                    <h3 className="text-lg font-semibold mb-6 text-primary">Recent Activity</h3>
+                    <h3 className="text-lg font-semibold mb-6 text-primary">Recent Pending Products</h3>
                     <div className="space-y-6">
-                        {[1, 2, 3, 4, 5].map((i) => (
-                            <div key={i} className="flex gap-4 group">
-                                <div className="relative">
-                                    <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center border group-hover:border-primary/50 transition-colors overflow-hidden">
-                                        <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=user${i}`} alt="user" />
+                        {recentProducts.length > 0 ? (
+                            recentProducts.map((product, i) => (
+                                <div key={product.id} className="flex gap-4 group">
+                                    <div className="relative">
+                                        <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center border group-hover:border-primary/50 transition-colors overflow-hidden">
+                                            {product.image_url ? (
+                                                <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <ShoppingBag className="w-5 h-5 text-muted-foreground" />
+                                            )}
+                                        </div>
+                                        {i < recentProducts.length - 1 && <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[1px] h-6 bg-border"></div>}
                                     </div>
-                                    {i < 5 && <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[1px] h-6 bg-border"></div>}
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium">
-                                        <span className="text-primary font-bold">Seller #00{i}</span> posted a new product
-                                    </p>
-                                    <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                                        <Clock className="w-3 h-3" />
-                                        <span>{i * 12} mins ago</span>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium truncate">
+                                            <span className="text-primary font-bold">{product.seller.full_name}</span> posted {product.name}
+                                        </p>
+                                        <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                                            <Clock className="w-3 h-3" />
+                                            <span>{new Date(product.created_at).toLocaleDateString()}</span>
+                                        </div>
                                     </div>
                                 </div>
+                            ))
+                        ) : (
+                            <div className="text-center py-8 text-muted-foreground">
+                                <ShoppingBag className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                                <p className="text-sm">No pending products</p>
                             </div>
-                        ))}
+                        )}
                     </div>
                     <button className="w-full mt-6 py-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors border border-dashed rounded-lg hover:border-primary/50">
-                        View All Activity
+                        View All Products
                     </button>
                 </div>
             </div>
