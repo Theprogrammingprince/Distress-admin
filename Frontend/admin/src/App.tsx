@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import AdminLayout from './components/layout/AdminLayout';
 import Dashboard from './pages/Dashboard';
+import Sellers from './pages/Sellers'
 import Products from './pages/Products';
 import SellerReviews from './pages/reviews/SellerReviews';
 import ProductReviews from './pages/reviews/ProductReviews';
