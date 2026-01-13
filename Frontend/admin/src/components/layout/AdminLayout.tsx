@@ -49,11 +49,20 @@ const AdminLayout = () => {
 
     return (
         <div className="flex h-screen bg-background text-foreground overflow-hidden">
+            {/* Mobile Overlay */}
+            {isSidebarOpen && (
+                <div 
+                    className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+                    onClick={() => setIsSidebarOpen(false)}
+                />
+            )}
+
             {/* Sidebar */}
             <aside
                 className={cn(
                     "fixed inset-y-0 left-0 z-50 flex flex-col bg-card border-r transition-all duration-300 ease-in-out",
-                    isSidebarOpen ? "w-64" : "w-20"
+                    "lg:translate-x-0",
+                    isSidebarOpen ? "translate-x-0 w-64" : "-translate-x-full lg:translate-x-0 lg:w-20"
                 )}
             >
                 <div className="flex items-center justify-between h-16 px-4 border-b">
@@ -64,8 +73,11 @@ const AdminLayout = () => {
                         </span>
                     </Link>
                     <button
-                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                        className="p-1 hover:bg-accent rounded-md lg:hidden"
+                        onClick={() => setIsSidebarOpen(false)}
+                        className={cn(
+                            "p-1 hover:bg-accent rounded-md transition-opacity",
+                            isSidebarOpen ? "lg:hidden" : "hidden"
+                        )}
                     >
                         <X className="w-6 h-6" />
                     </button>

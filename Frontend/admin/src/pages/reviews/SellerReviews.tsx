@@ -201,22 +201,33 @@ const SellerReviews = () => {
                         </div>
 
                         {/* Card Body - Seller Details */}
-                        <div className="p-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="p-4 md:p-6">
+                            {/* Rejection Reason if exists */}
+                            {seller.rejection_reason && (
+                                <div className="mb-4 bg-red-500/10 border border-red-500/20 rounded-lg p-3 md:p-4">
+                                    <p className="text-xs font-semibold text-red-500 uppercase mb-1 flex items-center gap-2">
+                                        <AlertTriangle className="w-3 h-3" />
+                                        Rejection Reason
+                                    </p>
+                                    <p className="text-sm text-red-600 dark:text-red-400">{seller.rejection_reason}</p>
+                                </div>
+                            )}
+
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                                 {/* Personal Information */}
-                                <div className="space-y-4">
-                                    <h4 className="text-sm font-semibold uppercase text-primary flex items-center gap-2">
-                                        <User className="w-4 h-4" />
+                                <div className="space-y-3 md:space-y-4">
+                                    <h4 className="text-xs md:text-sm font-semibold uppercase text-primary flex items-center gap-2">
+                                        <User className="w-3 h-3 md:w-4 md:h-4" />
                                         Personal Information
                                     </h4>
-                                    <div className="space-y-3 pl-6">
+                                    <div className="space-y-2 md:space-y-3 pl-4 md:pl-6">
                                         <div>
                                             <p className="text-xs text-muted-foreground uppercase font-semibold mb-1">Full Name</p>
-                                            <p className="text-sm font-medium">{seller.full_name || 'Not provided'}</p>
+                                            <p className="text-sm font-medium break-words">{seller.full_name || 'Not provided'}</p>
                                         </div>
                                         <div>
                                             <p className="text-xs text-muted-foreground uppercase font-semibold mb-1">Email</p>
-                                            <p className="text-sm font-medium">{seller.email}</p>
+                                            <p className="text-sm font-medium break-all">{seller.email}</p>
                                         </div>
                                         <div>
                                             <p className="text-xs text-muted-foreground uppercase font-semibold mb-1">Phone</p>
@@ -230,15 +241,15 @@ const SellerReviews = () => {
                                 </div>
 
                                 {/* Business Information */}
-                                <div className="space-y-4">
-                                    <h4 className="text-sm font-semibold uppercase text-primary flex items-center gap-2">
-                                        <FileText className="w-4 h-4" />
+                                <div className="space-y-3 md:space-y-4">
+                                    <h4 className="text-xs md:text-sm font-semibold uppercase text-primary flex items-center gap-2">
+                                        <FileText className="w-3 h-3 md:w-4 md:h-4" />
                                         Business Information
                                     </h4>
-                                    <div className="space-y-3 pl-6">
+                                    <div className="space-y-2 md:space-y-3 pl-4 md:pl-6">
                                         <div>
                                             <p className="text-xs text-muted-foreground uppercase font-semibold mb-1">Business Name</p>
-                                            <p className="text-sm font-medium">{seller.business_name || 'Not provided'}</p>
+                                            <p className="text-sm font-medium break-words">{seller.business_name || 'Not provided'}</p>
                                         </div>
                                         <div>
                                             <p className="text-xs text-muted-foreground uppercase font-semibold mb-1">Registration Number</p>
@@ -246,15 +257,15 @@ const SellerReviews = () => {
                                         </div>
                                         <div>
                                             <p className="text-xs text-muted-foreground uppercase font-semibold mb-1">Street Address</p>
-                                            <p className="text-sm font-medium">{seller.street_address || 'Not provided'}</p>
+                                            <p className="text-sm font-medium break-words">{seller.street_address || 'Not provided'}</p>
                                         </div>
                                         <div>
                                             <p className="text-xs text-muted-foreground uppercase font-semibold mb-1">Location</p>
                                             <p className="text-sm font-medium flex items-center gap-1">
                                                 {seller.city && seller.state ? (
                                                     <>
-                                                        <MapPin className="w-3 h-3 text-muted-foreground" />
-                                                        {seller.city}, {seller.state}
+                                                        <MapPin className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                                                        <span className="break-words">{seller.city}, {seller.state}</span>
                                                     </>
                                                 ) : (
                                                     'Not provided'
@@ -267,31 +278,35 @@ const SellerReviews = () => {
                         </div>
 
                         {/* Card Footer - Actions */}
-                        <div className="p-6 border-t bg-black/5 flex gap-3">
+                        {(seller.verification_status === 'pending' || seller.verification_status === 'rejected') && (
+                        <div className="p-4 md:p-6 border-t bg-black/5 flex flex-col sm:flex-row gap-2 md:gap-3">
                             <button
                                 onClick={() => {
                                     setSelectedSeller(seller);
                                     setShowRejectModal(true);
                                 }}
-                                disabled={actionLoading}
-                                className="flex-1 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white py-3 rounded-xl font-bold transition-all border border-red-500/20 disabled:opacity-50 flex items-center justify-center gap-2"
+                                disabled={actionLoading || seller.verification_status === 'rejected'}
+                                className="flex-1 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white py-2.5 md:py-3 rounded-xl text-sm md:text-base font-bold transition-all border border-red-500/20 disabled:opacity-50 flex items-center justify-center gap-2"
                             >
                                 <XCircle className="w-4 h-4" />
-                                Reject Seller
+                                <span className="hidden sm:inline">Reject Seller</span>
+                                <span className="sm:hidden">Reject</span>
                             </button>
                             <button
                                 onClick={() => handleApprove(seller.id)}
                                 disabled={actionLoading}
-                                className="flex-1 bg-primary text-primary-foreground hover:opacity-90 py-3 rounded-xl font-bold transition-all shadow-lg shadow-primary/20 disabled:opacity-50 flex items-center justify-center gap-2"
+                                className="flex-1 bg-primary text-primary-foreground hover:opacity-90 py-2.5 md:py-3 rounded-xl text-sm md:text-base font-bold transition-all shadow-lg shadow-primary/20 disabled:opacity-50 flex items-center justify-center gap-2"
                             >
                                 {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                                     <>
                                         <CheckCircle2 className="w-4 h-4" />
-                                        Approve Seller
+                                        <span className="hidden sm:inline">Approve Seller</span>
+                                        <span className="sm:hidden">Approve</span>
                                     </>
                                 )}
                             </button>
                         </div>
+                        )}
                     </div>
                 ))}
             </div>
