@@ -34,10 +34,14 @@ serve(async (req) => {
   try {
     // Get user ID from JWT token
     const authHeader = req.headers.get("Authorization");
+    console.log("🔐 Auth header received:", authHeader ? "Present" : "Missing");
+    
     const userId = getUserIdFromToken(authHeader);
+    console.log("👤 User ID from token:", userId);
 
     if (!userId) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      console.error("❌ No user ID extracted from token");
+      return new Response(JSON.stringify({ error: "Unauthorized", details: "Invalid or missing JWT token" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -56,12 +60,25 @@ serve(async (req) => {
       .eq("id", userId)
       .single();
 
-    if (profileError || profile?.role !== "super_admin") {
-      return new Response(JSON.stringify({ error: "Forbidden: Super admin access required" }), {
+    console.log("📊 Profile query result:", { profile, error: profileError });
+
+    if (profileError) {
+      console.error("❌ Profile query error:", profileError);
+      return new Response(JSON.stringify({ error: "Database error", details: profileError.message }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (profile?.role !== "super_admin") {
+      console.error("❌ User role is not super_admin:", profile?.role);
+      return new Response(JSON.stringify({ error: "Forbidden: Super admin access required", userRole: profile?.role }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    console.log("✅ User authorized as super_admin");
 
     const url = new URL(req.url);
     const path = url.pathname.replace("/sellers", "");
