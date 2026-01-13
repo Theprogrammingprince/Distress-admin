@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
 import {
     Plus,
     Search,
@@ -15,7 +14,7 @@ import {
     X
 } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { supabase } from '../lib/supabase';
+import { supabaseAdmin } from '../lib/supabase';
 
 interface Seller {
     id: string;
@@ -30,51 +29,64 @@ interface Seller {
     created_at: string;
 }
 
-// Fetch sellers from Supabase
-async function fetchSellers(page: number, limit: number) {
-    const offset = (page - 1) * limit;
-    
-    const { data, error, count } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact' })
-        .eq('role', 'client')
-        .order('created_at', { ascending: false })
-        .range(offset, offset + limit - 1);
-    
-    if (error) throw error;
-    
-    return {
-        sellers: data || [],
-        total: count || 0,
-        totalPages: Math.ceil((count || 0) / limit),
-    };
-}
-
 const Sellers = () => {
-    const queryClient = useQueryClient();
     const [searchTerm, setSearchTerm] = useState('');
+    const [sellers, setSellers] = useState<Seller[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<Error | null>(null);
     const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
     const [selectedSeller, setSelectedSeller] = useState<Seller | null>(null);
     const [showRejectModal, setShowRejectModal] = useState(false);
     const [rejectReason, setRejectReason] = useState('');
     const [actionLoading, setActionLoading] = useState(false);
     const limit = 20;
 
-    // Fetch sellers with TanStack Query
-    const { data, isLoading: loading, error, refetch } = useQuery({
-        queryKey: ['sellers', page],
-        queryFn: () => fetchSellers(page, limit),
-    });
+    useEffect(() => {
+        loadSellers();
+    }, [page]);
 
-    const sellers = data?.sellers || [];
-    const totalPages = data?.totalPages || 1;
+    async function loadSellers() {
+        console.log('🔄 loadSellers called, page:', page);
+        try {
+            setLoading(true);
+            setError(null);
+            
+            const offset = (page - 1) * limit;
+            console.log('📊 Query params:', { offset, limit, page });
+            
+            const { data, error: queryError, count } = await supabase
+                .from('profiles')
+                .select('*', { count: 'exact' })
+                .eq('role', 'client')
+                .order('created_at', { ascending: false })
+                .range(offset, offset + limit - 1);
+            
+            console.log('📥 Response:', { data, error: queryError, count });
+            
+            if (queryError) {
+                console.error('❌ Query error:', queryError);
+                throw queryError;
+            }
+            
+            console.log('✅ Setting sellers:', data?.length || 0, 'items');
+            setSellers(data || []);
+            setTotalPages(Math.ceil((count || 0) / limit));
+        } catch (err) {
+            console.error('💥 loadSellers error:', err);
+            setError(err as Error);
+        } finally {
+            setLoading(false);
+            console.log('🏁 loadSellers complete');
+        }
+    }
 
     async function handleApprove(sellerId: string) {
         if (!confirm('Are you sure you want to approve this seller? They will be able to create products.')) return;
         
         try {
             setActionLoading(true);
-            const { error: updateError } = await supabase
+            const { error: updateError } = await supabaseAdmin
                 .from('profiles')
                 .update({ 
                     seller_verification_status: 'verified',
@@ -83,7 +95,7 @@ const Sellers = () => {
                 .eq('id', sellerId);
             
             if (updateError) throw updateError;
-            refetch();
+            await loadSellers();
             alert('Seller approved successfully!');
         } catch (err) {
             alert(err instanceof Error ? err.message : 'Failed to approve seller');
@@ -100,7 +112,7 @@ const Sellers = () => {
 
         try {
             setActionLoading(true);
-            const { error: updateError } = await supabase
+            const { error: updateError } = await supabaseAdmin
                 .from('profiles')
                 .update({ 
                     seller_verification_status: 'rejected',
@@ -113,7 +125,7 @@ const Sellers = () => {
             setShowRejectModal(false);
             setRejectReason('');
             setSelectedSeller(null);
-            refetch();
+            await loadSellers();
             alert('Seller rejected successfully!');
         } catch (err) {
             alert(err instanceof Error ? err.message : 'Failed to reject seller');

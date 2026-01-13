@@ -8,39 +8,59 @@ import {
     AlertTriangle,
     Loader2,
     AlertCircle,
-    Star,
     CheckCircle2,
     ChevronLeft,
     ChevronRight,
-    User
+    User,
+    X
 } from 'lucide-react';
-import { getSellerReviews, getSellerReviewStats, approveSellerReview, rejectSellerReview, deleteSellerReview, type SellerReview } from '../../lib/reviewsApi';
-import { cn } from '../../lib/utils';
+import { getPendingSellers, getSellerStats, approveSeller, rejectSeller } from '../../lib/sellerApi';
+
+interface Seller {
+    id: string;
+    full_name: string;
+    email: string;
+    phone?: string;
+    role: string;
+    avatar_url?: string;
+    created_at: string;
+    business_name?: string;
+    business_reg_number?: string;
+    nin?: string;
+    street_address?: string;
+    city?: string;
+    state?: string;
+    verification_status?: string;
+    seller_verification_status?: string;
+    rejection_reason?: string;
+}
 
 const SellerReviews = () => {
-    const [reviews, setReviews] = useState<SellerReview[]>([]);
+    const [sellers, setSellers] = useState<Seller[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [stats, setStats] = useState({ pending_count: 0, approved_count: 0, rejected_count: 0, total_count: 0, average_rating: 0 });
+    const [stats, setStats] = useState({ verified_count: 0, pending_count: 0, unverified_count: 0, total_count: 0 });
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [actionLoading, setActionLoading] = useState(false);
-    const [selectedReview, setSelectedReview] = useState<SellerReview | null>(null);
+    const [selectedSeller, setSelectedSeller] = useState<Seller | null>(null);
+    const [showRejectModal, setShowRejectModal] = useState(false);
+    const [rejectReason, setRejectReason] = useState('');
 
     useEffect(() => {
-        loadReviews();
+        loadSellers();
         loadStats();
     }, [page]);
 
-    async function loadReviews() {
+    async function loadSellers() {
         try {
             setLoading(true);
             setError(null);
-            const data = await getSellerReviews(undefined, page, 20);
-            setReviews(data.reviews);
+            const data = await getPendingSellers(page, 20);
+            setSellers(data.sellers);
             setTotalPages(data.totalPages);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to load reviews');
+            setError(err instanceof Error ? err.message : 'Failed to load pending sellers');
         } finally {
             setLoading(false);
         }
@@ -48,60 +68,47 @@ const SellerReviews = () => {
 
     async function loadStats() {
         try {
-            const data = await getSellerReviewStats();
+            const data = await getSellerStats();
             setStats(data);
         } catch (err) {
             console.error('Failed to load stats:', err);
         }
     }
 
-    async function handleApprove(reviewId: string) {
-        if (!confirm('Approve this seller review?')) return;
+    async function handleApprove(sellerId: string) {
+        if (!confirm('Approve this seller? They will be able to create products.')) return;
         
         try {
             setActionLoading(true);
-            await approveSellerReview(reviewId);
-            await loadReviews();
+            await approveSeller(sellerId);
+            await loadSellers();
             await loadStats();
-            setSelectedReview(null);
-            alert('Review approved successfully!');
+            setSelectedSeller(null);
+            alert('Seller approved successfully!');
         } catch (err) {
-            alert(err instanceof Error ? err.message : 'Failed to approve review');
+            alert(err instanceof Error ? err.message : 'Failed to approve seller');
         } finally {
             setActionLoading(false);
         }
     }
 
-    async function handleReject(reviewId: string) {
-        const reason = prompt('Enter rejection reason:');
-        if (!reason) return;
-        
-        try {
-            setActionLoading(true);
-            await rejectSellerReview(reviewId, reason);
-            await loadReviews();
-            await loadStats();
-            setSelectedReview(null);
-            alert('Review rejected successfully!');
-        } catch (err) {
-            alert(err instanceof Error ? err.message : 'Failed to reject review');
-        } finally {
-            setActionLoading(false);
+    async function handleReject() {
+        if (!selectedSeller || !rejectReason.trim()) {
+            alert('Please provide a rejection reason');
+            return;
         }
-    }
-
-    async function handleDelete(reviewId: string) {
-        if (!confirm('Delete this review permanently?')) return;
         
         try {
             setActionLoading(true);
-            await deleteSellerReview(reviewId);
-            await loadReviews();
+            await rejectSeller(selectedSeller.id, rejectReason);
+            await loadSellers();
             await loadStats();
-            setSelectedReview(null);
-            alert('Review deleted successfully!');
+            setShowRejectModal(false);
+            setRejectReason('');
+            setSelectedSeller(null);
+            alert('Seller rejected successfully!');
         } catch (err) {
-            alert(err instanceof Error ? err.message : 'Failed to delete review');
+            alert(err instanceof Error ? err.message : 'Failed to reject seller');
         } finally {
             setActionLoading(false);
         }
@@ -115,14 +122,14 @@ const SellerReviews = () => {
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
             <div>
-                <h1 className="text-3xl font-bold tracking-tight">Seller Reviews</h1>
-                <p className="text-muted-foreground mt-1">Moderate customer reviews for sellers.</p>
+                <h1 className="text-3xl font-bold tracking-tight">Pending Sellers</h1>
+                <p className="text-muted-foreground mt-1">Review and approve sellers waiting for verification.</p>
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="bg-card rounded-xl border border-border p-4">
-                    <p className="text-xs text-muted-foreground uppercase font-semibold">Total Reviews</p>
+                    <p className="text-xs text-muted-foreground uppercase font-semibold">Total Sellers</p>
                     <p className="text-2xl font-bold mt-1">{stats.total_count}</p>
                 </div>
                 <div className="bg-card rounded-xl border border-yellow-500/20 p-4">
@@ -130,16 +137,12 @@ const SellerReviews = () => {
                     <p className="text-2xl font-bold mt-1 text-yellow-500">{stats.pending_count}</p>
                 </div>
                 <div className="bg-card rounded-xl border border-green-500/20 p-4">
-                    <p className="text-xs text-green-500 uppercase font-semibold">Approved</p>
-                    <p className="text-2xl font-bold mt-1 text-green-500">{stats.approved_count}</p>
+                    <p className="text-xs text-green-500 uppercase font-semibold">Verified</p>
+                    <p className="text-2xl font-bold mt-1 text-green-500">{stats.verified_count}</p>
                 </div>
                 <div className="bg-card rounded-xl border border-red-500/20 p-4">
-                    <p className="text-xs text-red-500 uppercase font-semibold">Rejected</p>
-                    <p className="text-2xl font-bold mt-1 text-red-500">{stats.rejected_count}</p>
-                </div>
-                <div className="bg-card rounded-xl border border-blue-500/20 p-4">
-                    <p className="text-xs text-blue-500 uppercase font-semibold">Avg Rating</p>
-                    <p className="text-2xl font-bold mt-1 text-blue-500">{stats.average_rating.toFixed(1)} ⭐</p>
+                    <p className="text-xs text-red-500 uppercase font-semibold">Unverified</p>
+                    <p className="text-2xl font-bold mt-1 text-red-500">{stats.unverified_count}</p>
                 </div>
             </div>
 
@@ -155,97 +158,151 @@ const SellerReviews = () => {
                 <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 flex items-center gap-3">
                     <AlertCircle className="w-5 h-5 text-red-500" />
                     <div>
-                        <p className="text-sm font-medium text-red-500">Error loading reviews</p>
+                        <p className="text-sm font-medium text-red-500">Error loading sellers</p>
                         <p className="text-xs text-red-500/80 mt-1">{error}</p>
                     </div>
-                    <button onClick={loadReviews} className="ml-auto px-3 py-1 bg-red-500/20 hover:bg-red-500/30 rounded text-xs font-medium text-red-500">
+                    <button onClick={loadSellers} className="ml-auto px-3 py-1 bg-red-500/20 hover:bg-red-500/30 rounded text-xs font-medium text-red-500">
                         Retry
                     </button>
                 </div>
             )}
 
-            {/* Reviews Table */}
+            {/* Sellers Cards */}
             {!loading && !error && (
-            <div className="bg-card rounded-xl border border-border/50 shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead>
-                            <tr className="bg-muted/50 text-left border-b">
-                                <th className="px-6 py-4 text-sm font-semibold uppercase tracking-wider">Seller</th>
-                                <th className="px-6 py-4 text-sm font-semibold uppercase tracking-wider">Reviewer</th>
-                                <th className="px-6 py-4 text-sm font-semibold uppercase tracking-wider">Rating</th>
-                                <th className="px-6 py-4 text-sm font-semibold uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-4 text-sm font-semibold uppercase tracking-wider">Date</th>
-                                <th className="px-6 py-4 text-sm font-semibold uppercase tracking-wider text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y border-border/40">
-                            {reviews.map((review) => (
-                                <tr key={review.id} className="hover:bg-accent/40 transition-colors group">
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center border group-hover:border-primary/50 transition-colors overflow-hidden">
-                                                {review.seller?.avatar_url ? (
-                                                    <img src={review.seller.avatar_url} alt="seller" />
+            <div className="grid grid-cols-1 gap-6">
+                {sellers.map((seller) => (
+                    <div key={seller.id} className="bg-card rounded-xl border border-border/50 shadow-sm overflow-hidden hover:border-primary/30 transition-all">
+                        {/* Card Header */}
+                        <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-6 border-b">
+                            <div className="flex items-start justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center border-2 border-primary/20 overflow-hidden">
+                                        {seller.avatar_url ? (
+                                            <img src={seller.avatar_url} alt="seller" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <span className="text-2xl font-bold text-primary">{seller.full_name?.charAt(0) || 'S'}</span>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-bold">{seller.full_name || 'N/A'}</h3>
+                                        <p className="text-sm text-muted-foreground">{seller.email}</p>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-yellow-500/10 text-yellow-500 border-yellow-500/20">
+                                                <Clock className="w-3 h-3" />
+                                                Pending Review
+                                            </span>
+                                            <span className="text-xs text-muted-foreground">
+                                                Joined {formatDate(seller.created_at)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Card Body - Seller Details */}
+                        <div className="p-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Personal Information */}
+                                <div className="space-y-4">
+                                    <h4 className="text-sm font-semibold uppercase text-primary flex items-center gap-2">
+                                        <User className="w-4 h-4" />
+                                        Personal Information
+                                    </h4>
+                                    <div className="space-y-3 pl-6">
+                                        <div>
+                                            <p className="text-xs text-muted-foreground uppercase font-semibold mb-1">Full Name</p>
+                                            <p className="text-sm font-medium">{seller.full_name || 'Not provided'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-muted-foreground uppercase font-semibold mb-1">Email</p>
+                                            <p className="text-sm font-medium">{seller.email}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-muted-foreground uppercase font-semibold mb-1">Phone</p>
+                                            <p className="text-sm font-medium">{seller.phone || 'Not provided'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-muted-foreground uppercase font-semibold mb-1">NIN</p>
+                                            <p className="text-sm font-medium">{seller.nin || 'Not provided'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Business Information */}
+                                <div className="space-y-4">
+                                    <h4 className="text-sm font-semibold uppercase text-primary flex items-center gap-2">
+                                        <FileText className="w-4 h-4" />
+                                        Business Information
+                                    </h4>
+                                    <div className="space-y-3 pl-6">
+                                        <div>
+                                            <p className="text-xs text-muted-foreground uppercase font-semibold mb-1">Business Name</p>
+                                            <p className="text-sm font-medium">{seller.business_name || 'Not provided'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-muted-foreground uppercase font-semibold mb-1">Registration Number</p>
+                                            <p className="text-sm font-medium">{seller.business_reg_number || 'Not provided'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-muted-foreground uppercase font-semibold mb-1">Street Address</p>
+                                            <p className="text-sm font-medium">{seller.street_address || 'Not provided'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-muted-foreground uppercase font-semibold mb-1">Location</p>
+                                            <p className="text-sm font-medium flex items-center gap-1">
+                                                {seller.city && seller.state ? (
+                                                    <>
+                                                        <MapPin className="w-3 h-3 text-muted-foreground" />
+                                                        {seller.city}, {seller.state}
+                                                    </>
                                                 ) : (
-                                                    <User className="w-5 h-5 text-primary" />
+                                                    'Not provided'
                                                 )}
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-medium">{review.seller?.business_name || review.seller?.full_name || 'Unknown'}</p>
-                                                <p className="text-xs text-muted-foreground">{review.seller?.email}</p>
-                                            </div>
+                                            </p>
                                         </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <p className="text-sm font-medium">{review.buyer?.full_name || 'Anonymous'}</p>
-                                        <p className="text-xs text-muted-foreground">{review.buyer?.email}</p>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-1">
-                                            <Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />
-                                            <span className="text-sm font-bold">{review.rating}/5</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={cn(
-                                            "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border",
-                                            review.status === 'approved' && "bg-green-500/10 text-green-500 border-green-500/20",
-                                            review.status === 'pending' && "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
-                                            review.status === 'rejected' && "bg-red-500/10 text-red-500 border-red-500/20"
-                                        )}>
-                                            {review.status === 'approved' && <CheckCircle2 className="w-3 h-3" />}
-                                            {review.status === 'pending' && <Clock className="w-3 h-3" />}
-                                            {review.status === 'rejected' && <XCircle className="w-3 h-3" />}
-                                            {review.status.charAt(0).toUpperCase() + review.status.slice(1)}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-muted-foreground">
-                                        {formatDate(review.created_at)}
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <button
-                                            onClick={() => setSelectedReview(review)}
-                                            className="inline-flex items-center gap-2 bg-accent hover:bg-primary hover:text-primary-foreground px-3 py-1.5 rounded-md text-sm font-medium transition-all"
-                                        >
-                                            <Eye className="w-4 h-4" />
-                                            View
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Card Footer - Actions */}
+                        <div className="p-6 border-t bg-black/5 flex gap-3">
+                            <button
+                                onClick={() => {
+                                    setSelectedSeller(seller);
+                                    setShowRejectModal(true);
+                                }}
+                                disabled={actionLoading}
+                                className="flex-1 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white py-3 rounded-xl font-bold transition-all border border-red-500/20 disabled:opacity-50 flex items-center justify-center gap-2"
+                            >
+                                <XCircle className="w-4 h-4" />
+                                Reject Seller
+                            </button>
+                            <button
+                                onClick={() => handleApprove(seller.id)}
+                                disabled={actionLoading}
+                                className="flex-1 bg-primary text-primary-foreground hover:opacity-90 py-3 rounded-xl font-bold transition-all shadow-lg shadow-primary/20 disabled:opacity-50 flex items-center justify-center gap-2"
+                            >
+                                {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                                    <>
+                                        <CheckCircle2 className="w-4 h-4" />
+                                        Approve Seller
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                ))}
             </div>
             )}
 
             {/* Empty State */}
-            {!loading && !error && reviews.length === 0 && (
+            {!loading && !error && sellers.length === 0 && (
                 <div className="py-20 text-center bg-card rounded-2xl border border-dashed border-border">
                     <CheckCircle2 className="w-16 h-16 text-green-500/30 mx-auto mb-4" />
-                    <h2 className="text-xl font-bold">No reviews found</h2>
-                    <p className="text-muted-foreground">There are no seller reviews to display.</p>
+                    <h2 className="text-xl font-bold">No pending sellers</h2>
+                    <p className="text-muted-foreground">There are no sellers waiting for approval.</p>
                 </div>
             )}
 
@@ -274,99 +331,82 @@ const SellerReviews = () => {
                 </div>
             )}
 
-            {/* Review Detail Modal */}
-            {selectedReview && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-card w-full max-w-2xl rounded-2xl border border-border overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
-                        <div className="p-6 border-b flex justify-between items-center bg-accent/30">
+            {/* Reject Modal */}
+            {showRejectModal && selectedSeller && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                    <div className="bg-card w-full max-w-lg rounded-2xl border border-border overflow-hidden shadow-2xl">
+                        <div className="p-6 border-b flex justify-between items-center bg-red-500/5">
                             <div>
-                                <h3 className="text-xl font-bold">Seller Review Details</h3>
-                                <p className="text-sm text-muted-foreground">Submitted on {formatDate(selectedReview.created_at)}</p>
+                                <h3 className="text-xl font-bold flex items-center gap-2">
+                                    <AlertTriangle className="w-5 h-5 text-red-500" />
+                                    Reject Seller Application
+                                </h3>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                    Rejecting: <span className="font-semibold">{selectedSeller.full_name}</span>
+                                </p>
                             </div>
-                            <button onClick={() => setSelectedReview(null)} className="p-2 hover:bg-accent rounded-full transition-colors">
-                                <XCircle className="w-6 h-6 text-muted-foreground" />
+                            <button onClick={() => {
+                                setShowRejectModal(false);
+                                setRejectReason('');
+                            }} className="p-2 hover:bg-accent rounded-full transition-colors">
+                                <X className="w-5 h-5" />
                             </button>
                         </div>
 
-                        <div className="p-6 space-y-6">
-                            <div className="flex items-center gap-4 p-4 bg-accent/30 rounded-xl">
-                                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center border overflow-hidden">
-                                    {selectedReview.seller?.avatar_url ? (
-                                        <img src={selectedReview.seller.avatar_url} alt="seller" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <User className="w-8 h-8 text-primary" />
-                                    )}
-                                </div>
-                                <div className="flex-1">
-                                    <p className="font-bold text-lg">{selectedReview.seller?.business_name || selectedReview.seller?.full_name}</p>
-                                    <p className="text-sm text-muted-foreground">{selectedReview.seller?.email}</p>
-                                </div>
-                                <div className="flex items-center gap-2 px-4 py-2 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
-                                    <Star className="w-5 h-5 fill-yellow-500 text-yellow-500" />
-                                    <span className="text-xl font-bold text-yellow-500">{selectedReview.rating}/5</span>
-                                </div>
+                        <div className="p-6 space-y-4">
+                            <div>
+                                <label className="text-sm font-semibold mb-2 block">
+                                    Rejection Reason <span className="text-red-500">*</span>
+                                </label>
+                                <p className="text-xs text-muted-foreground mb-2">
+                                    Provide a clear reason for rejection. This will be sent to the seller.
+                                </p>
+                                <textarea
+                                    value={rejectReason}
+                                    onChange={(e) => setRejectReason(e.target.value)}
+                                    placeholder="e.g., Incomplete business registration documents, Invalid NIN, Business address not verifiable..."
+                                    className="w-full bg-background border rounded-lg p-3 text-sm min-h-[120px] focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    autoFocus
+                                />
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    {rejectReason.length} characters
+                                </p>
                             </div>
 
-                            <div>
-                                <h4 className="text-sm font-semibold uppercase text-primary mb-2">Review Comment</h4>
-                                <div className="p-4 bg-accent/20 rounded-lg border border-border">
-                                    <p className="text-sm text-foreground leading-relaxed">{selectedReview.comment}</p>
-                                </div>
-                            </div>
-
-                            <div>
-                                <h4 className="text-sm font-semibold uppercase text-primary mb-2">Reviewer Information</h4>
-                                <div className="space-y-2">
-                                    <div className="flex items-center gap-3 text-sm">
-                                        <span className="w-24 text-muted-foreground font-medium">Name</span>
-                                        <span className="font-semibold">{selectedReview.buyer?.full_name || 'Anonymous'}</span>
-                                    </div>
-                                    <div className="flex items-center gap-3 text-sm">
-                                        <span className="w-24 text-muted-foreground font-medium">Email</span>
-                                        <span className="font-semibold">{selectedReview.buyer?.email || 'N/A'}</span>
-                                    </div>
-                                    <div className="flex items-center gap-3 text-sm">
-                                        <span className="w-24 text-muted-foreground font-medium">Status</span>
-                                        <span className={cn(
-                                            "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border",
-                                            selectedReview.status === 'approved' && "bg-green-500/10 text-green-500 border-green-500/20",
-                                            selectedReview.status === 'pending' && "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
-                                            selectedReview.status === 'rejected' && "bg-red-500/10 text-red-500 border-red-500/20"
-                                        )}>
-                                            {selectedReview.status.charAt(0).toUpperCase() + selectedReview.status.slice(1)}
-                                        </span>
-                                    </div>
-                                </div>
+                            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">
+                                <p className="text-xs text-yellow-600 dark:text-yellow-500 flex items-start gap-2">
+                                    <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                                    <span>
+                                        The seller will be notified via email about the rejection and can reapply after addressing the issues mentioned.
+                                    </span>
+                                </p>
                             </div>
                         </div>
 
-                        <div className="p-6 border-t bg-black/10 flex gap-3">
-                            {selectedReview.status === 'pending' ? (
-                                <>
-                                    <button 
-                                        onClick={() => handleReject(selectedReview.id)}
-                                        disabled={actionLoading}
-                                        className="flex-1 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white py-2.5 rounded-xl font-bold transition-all border border-red-500/20 disabled:opacity-50"
-                                    >
-                                        {actionLoading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Reject Review'}
-                                    </button>
-                                    <button 
-                                        onClick={() => handleApprove(selectedReview.id)}
-                                        disabled={actionLoading}
-                                        className="flex-1 bg-primary text-primary-foreground hover:opacity-90 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
-                                    >
-                                        {actionLoading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Approve Review'}
-                                    </button>
-                                </>
-                            ) : (
-                                <button 
-                                    onClick={() => handleDelete(selectedReview.id)}
-                                    disabled={actionLoading}
-                                    className="flex-1 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white py-2.5 rounded-xl font-bold transition-all border border-red-500/20 disabled:opacity-50"
-                                >
-                                    {actionLoading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Delete Review'}
-                                </button>
-                            )}
+                        <div className="p-6 border-t bg-black/5 flex gap-3">
+                            <button
+                                onClick={() => {
+                                    setShowRejectModal(false);
+                                    setRejectReason('');
+                                }}
+                                className="flex-1 bg-accent hover:bg-accent/80 py-3 rounded-xl font-bold transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleReject}
+                                disabled={actionLoading || !rejectReason.trim()}
+                                className="flex-1 bg-red-500 text-white hover:bg-red-600 py-3 rounded-xl font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                            >
+                                {actionLoading ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <>
+                                        <XCircle className="w-4 h-4" />
+                                        Confirm Rejection
+                                    </>
+                                )}
+                            </button>
                         </div>
                     </div>
                 </div>
