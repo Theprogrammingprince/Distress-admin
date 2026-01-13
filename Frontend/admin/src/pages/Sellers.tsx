@@ -240,20 +240,6 @@ const Sellers = () => {
                                     </td>
                                     <td className="px-6 py-4">
                                         <p className="text-sm font-medium">{seller.business_name || 'Not provided'}</p>
-                                        {seller.city && seller.state && (
-                                            <p className="text-xs text-muted-foreground">{seller.city}, {seller.state}</p>
-                                        )}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={cn(
-                                            "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border",
-                                            seller.verification_status === 'approved' && "bg-green-500/10 text-green-500 border-green-500/20",
-                                            seller.verification_status === 'pending' && "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
-                                            seller.verification_status === 'rejected' && "bg-red-500/10 text-red-500 border-red-500/20"
-                                        )}>
-                                            {seller.verification_status === 'approved' && <CheckCircle className="w-3 h-3" />}
-                                            {seller.verification_status === 'pending' && <Clock className="w-3 h-3" />}
-                                            {seller.verification_status === 'rejected' && <XCircle className="w-3 h-3" />}
                                             {seller.verification_status.charAt(0).toUpperCase() + seller.verification_status.slice(1)}
                                         </span>
                                     </td>

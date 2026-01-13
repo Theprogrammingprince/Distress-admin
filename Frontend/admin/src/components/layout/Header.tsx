@@ -1,4 +1,4 @@
-import { Search, Sun, Bell, MessageSquare, Menu, LogOut, User, ChevronDown } from 'lucide-react';
+import { Search, Sun, Bell, MessageSquare, Menu, LogOut, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 

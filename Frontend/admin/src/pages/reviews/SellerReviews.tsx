@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import {
     XCircle,
     Clock,
-    Eye,
     FileText,
     MapPin,
     AlertTriangle,
@@ -14,7 +13,7 @@ import {
     User,
     X
 } from 'lucide-react';
-import { getPendingSellers, getSellerStats, approveSeller, rejectSeller } from '../../lib/sellerApi';
+import { getAllSellers, getSellerStats, approveSeller, rejectSeller } from '../../lib/sellerApi';
 
 interface Seller {
     id: string;
@@ -39,30 +38,46 @@ const SellerReviews = () => {
     const [sellers, setSellers] = useState<Seller[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [stats, setStats] = useState({ verified_count: 0, pending_count: 0, unverified_count: 0, total_count: 0 });
+    const [stats, setStats] = useState({ approved_count: 0, pending_count: 0, rejected_count: 0, total_count: 0, buyer_count: 0 });
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [actionLoading, setActionLoading] = useState(false);
     const [selectedSeller, setSelectedSeller] = useState<Seller | null>(null);
     const [showRejectModal, setShowRejectModal] = useState(false);
     const [rejectReason, setRejectReason] = useState('');
+    const [filterStatus, setFilterStatus] = useState<'pending' | 'rejected' | 'all'>('pending');
 
     useEffect(() => {
         loadSellers();
         loadStats();
-    }, [page]);
+    }, [page, filterStatus]);
 
     async function loadSellers() {
+        console.log('🔄 [SellerReviews] loadSellers called', { page, filterStatus });
         try {
             setLoading(true);
             setError(null);
-            const data = await getPendingSellers(page, 20);
+            let data;
+            console.log('📡 [SellerReviews] Fetching sellers with filter:', filterStatus);
+            if (filterStatus === 'all') {
+                data = await getAllSellers(undefined, page, 20);
+            } else {
+                data = await getAllSellers(filterStatus, page, 20);
+            }
+            console.log('✅ [SellerReviews] Data received:', {
+                sellersCount: data.sellers?.length || 0,
+                totalPages: data.totalPages,
+                sellers: data.sellers
+            });
             setSellers(data.sellers);
             setTotalPages(data.totalPages);
+            console.log('💾 [SellerReviews] State updated with sellers:', data.sellers?.length || 0);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to load pending sellers');
+            console.error('❌ [SellerReviews] Error loading sellers:', err);
+            setError(err instanceof Error ? err.message : 'Failed to load sellers');
         } finally {
             setLoading(false);
+            console.log('🏁 [SellerReviews] loadSellers complete');
         }
     }
 
@@ -100,13 +115,45 @@ const SellerReviews = () => {
         
         try {
             setActionLoading(true);
+            
+            // Reject the seller
             await rejectSeller(selectedSeller.id, rejectReason);
+            
+            // Send notification to the seller
+            try {
+                const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://zrdnrpbhqzhmebgralku.supabase.co';
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/notifications`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+                    },
+                    body: JSON.stringify({
+                        userId: selectedSeller.id,
+                        type: 'seller_rejected',
+                        title: 'Seller Application Rejected',
+                        message: `Your seller application has been rejected. Reason: ${rejectReason}`,
+                        data: {
+                            rejection_reason: rejectReason,
+                            rejected_at: new Date().toISOString(),
+                        },
+                    }),
+                });
+                
+                if (!response.ok) {
+                    console.error('Failed to send notification:', await response.text());
+                }
+            } catch (notifError) {
+                console.error('Notification error:', notifError);
+                // Don't fail the rejection if notification fails
+            }
+            
             await loadSellers();
             await loadStats();
             setShowRejectModal(false);
             setRejectReason('');
             setSelectedSeller(null);
-            alert('Seller rejected successfully!');
+            alert('Seller rejected successfully! Notification sent to seller.');
         } catch (err) {
             alert(err instanceof Error ? err.message : 'Failed to reject seller');
         } finally {
@@ -119,6 +166,15 @@ const SellerReviews = () => {
         return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
     }
 
+    console.log('🎨 [SellerReviews] Rendering component', {
+        loading,
+        error,
+        sellersCount: sellers.length,
+        filterStatus,
+        page,
+        totalPages
+    });
+
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
             <div>
@@ -127,23 +183,66 @@ const SellerReviews = () => {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-card rounded-xl border border-border p-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                <div className="bg-card rounded-xl border border-border p-3 md:p-4">
                     <p className="text-xs text-muted-foreground uppercase font-semibold">Total Sellers</p>
-                    <p className="text-2xl font-bold mt-1">{stats.total_count}</p>
+                    <p className="text-xl md:text-2xl font-bold mt-1">{stats.total_count}</p>
                 </div>
-                <div className="bg-card rounded-xl border border-yellow-500/20 p-4">
+                <div className="bg-card rounded-xl border border-yellow-500/20 p-3 md:p-4">
                     <p className="text-xs text-yellow-500 uppercase font-semibold">Pending</p>
-                    <p className="text-2xl font-bold mt-1 text-yellow-500">{stats.pending_count}</p>
+                    <p className="text-xl md:text-2xl font-bold mt-1 text-yellow-500">{stats.pending_count}</p>
                 </div>
-                <div className="bg-card rounded-xl border border-green-500/20 p-4">
-                    <p className="text-xs text-green-500 uppercase font-semibold">Verified</p>
-                    <p className="text-2xl font-bold mt-1 text-green-500">{stats.verified_count}</p>
+                <div className="bg-card rounded-xl border border-green-500/20 p-3 md:p-4">
+                    <p className="text-xs text-green-500 uppercase font-semibold">Approved</p>
+                    <p className="text-xl md:text-2xl font-bold mt-1 text-green-500">{stats.approved_count}</p>
                 </div>
-                <div className="bg-card rounded-xl border border-red-500/20 p-4">
-                    <p className="text-xs text-red-500 uppercase font-semibold">Unverified</p>
-                    <p className="text-2xl font-bold mt-1 text-red-500">{stats.unverified_count}</p>
+                <div className="bg-card rounded-xl border border-red-500/20 p-3 md:p-4">
+                    <p className="text-xs text-red-500 uppercase font-semibold">Rejected</p>
+                    <p className="text-xl md:text-2xl font-bold mt-1 text-red-500">{stats.rejected_count}</p>
                 </div>
+            </div>
+
+            {/* Filter Tabs */}
+            <div className="bg-card rounded-xl border border-border p-1 flex gap-1 overflow-x-auto">
+                <button
+                    onClick={() => {
+                        setFilterStatus('pending');
+                        setPage(1);
+                    }}
+                    className={`flex-1 min-w-[100px] px-4 py-2.5 rounded-lg font-semibold text-sm transition-all ${
+                        filterStatus === 'pending'
+                            ? 'bg-yellow-500 text-white shadow-lg'
+                            : 'hover:bg-accent text-muted-foreground'
+                    }`}
+                >
+                    Pending
+                </button>
+                <button
+                    onClick={() => {
+                        setFilterStatus('rejected');
+                        setPage(1);
+                    }}
+                    className={`flex-1 min-w-[100px] px-4 py-2.5 rounded-lg font-semibold text-sm transition-all ${
+                        filterStatus === 'rejected'
+                            ? 'bg-red-500 text-white shadow-lg'
+                            : 'hover:bg-accent text-muted-foreground'
+                    }`}
+                >
+                    Rejected
+                </button>
+                <button
+                    onClick={() => {
+                        setFilterStatus('all');
+                        setPage(1);
+                    }}
+                    className={`flex-1 min-w-[100px] px-4 py-2.5 rounded-lg font-semibold text-sm transition-all ${
+                        filterStatus === 'all'
+                            ? 'bg-primary text-primary-foreground shadow-lg'
+                            : 'hover:bg-accent text-muted-foreground'
+                    }`}
+                >
+                    All Sellers
+                </button>
             </div>
 
             {/* Loading State */}
@@ -173,7 +272,7 @@ const SellerReviews = () => {
                 {sellers.map((seller) => (
                     <div key={seller.id} className="bg-card rounded-xl border border-border/50 shadow-sm overflow-hidden hover:border-primary/30 transition-all">
                         {/* Card Header */}
-                        <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-6 border-b">
+                        <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 md:p-6 border-b">
                             <div className="flex items-start justify-between">
                                 <div className="flex items-center gap-4">
                                     <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center border-2 border-primary/20 overflow-hidden">
@@ -199,6 +298,7 @@ const SellerReviews = () => {
                                 </div>
                             </div>
                         </div>
+                       
 
                         {/* Card Body - Seller Details */}
                         <div className="p-4 md:p-6">
@@ -228,7 +328,8 @@ const SellerReviews = () => {
                                         <div>
                                             <p className="text-xs text-muted-foreground uppercase font-semibold mb-1">Email</p>
                                             <p className="text-sm font-medium break-all">{seller.email}</p>
-                                        </div>
+                                        </div>    <span className="break-words">{seller.city}, {seller.state}</span>
+                                                    
                                         <div>
                                             <p className="text-xs text-muted-foreground uppercase font-semibold mb-1">Phone</p>
                                             <p className="text-sm font-medium">{seller.phone || 'Not provided'}</p>
@@ -265,7 +366,6 @@ const SellerReviews = () => {
                                                 {seller.city && seller.state ? (
                                                     <>
                                                         <MapPin className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-                                                        <span className="break-words">{seller.city}, {seller.state}</span>
                                                     </>
                                                 ) : (
                                                     'Not provided'

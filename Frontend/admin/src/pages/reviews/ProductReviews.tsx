@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
 import {
-    ShieldAlert,
     Clock,
     CheckCircle2,
     XCircle,
-    Timer,
     ShoppingBag,
     Loader2,
     AlertCircle,

@@ -74,19 +74,24 @@ export async function getAllSellers(
   page = 1,
   limit = 20
 ): Promise<PaginatedSellersResponse> {
+  console.log('📡 [sellerApi] getAllSellers called', { status, page, limit });
   const headers = await getAuthHeaders();
   const statusParam = status ? `&status=${status}` : '';
-  const response = await fetch(
-    `${BASE_URL}/sellers/all?page=${page}&limit=${limit}${statusParam}`,
-    { headers }
-  );
+  const url = `${BASE_URL}/sellers/all?page=${page}&limit=${limit}${statusParam}`;
+  console.log('🌐 [sellerApi] Fetching from URL:', url);
+  
+  const response = await fetch(url, { headers });
+  console.log('📥 [sellerApi] Response status:', response.status, response.statusText);
   
   if (!response.ok) {
     const error = await response.json();
+    console.error('❌ [sellerApi] API Error:', error);
     throw new Error(error.error || 'Failed to fetch sellers');
   }
   
-  return response.json();
+  const data = await response.json();
+  console.log('✅ [sellerApi] Data received:', data);
+  return data;
 }
 
 /**
