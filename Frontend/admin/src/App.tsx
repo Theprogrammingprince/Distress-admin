@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import AdminLayout from './components/layout/AdminLayout';
 import Dashboard from './pages/Dashboard';
-import Sellers from './pages/Sellers';
 import Products from './pages/Products';
 import SellerReviews from './pages/reviews/SellerReviews';
 import ProductReviews from './pages/reviews/ProductReviews';
@@ -76,7 +75,6 @@ function App() {
           <Route path="/" element={<Navigate to="/admin" replace />} />
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Dashboard />} />
-            <Route path="sellers" element={<Sellers />} />
             <Route path="products" element={<Products />} />
             <Route path="reviews/sellers" element={<SellerReviews />} />
             <Route path="reviews/products" element={<ProductReviews />} />

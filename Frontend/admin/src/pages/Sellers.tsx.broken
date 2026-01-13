@@ -14,7 +14,7 @@ import {
     X
 } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { supabase } from '../lib/supabase';
+import { supabaseAdmin } from '../lib/supabase';
 
 interface Seller {
     id: string;
@@ -27,9 +27,6 @@ interface Seller {
     business_name?: string;
     avatar_url?: string;
     created_at: string;
-    city?: string;
-    state?: string;
-    rejection_reason?: string;
 }
 
 const Sellers = () => {
@@ -89,7 +86,7 @@ const Sellers = () => {
         
         try {
             setActionLoading(true);
-            const { error: updateError } = await supabase
+            const { error: updateError } = await supabaseAdmin
                 .from('profiles')
                 .update({ 
                     seller_verification_status: 'verified',
@@ -115,7 +112,7 @@ const Sellers = () => {
 
         try {
             setActionLoading(true);
-            const { error: updateError } = await supabase
+            const { error: updateError } = await supabaseAdmin
                 .from('profiles')
                 .update({ 
                     seller_verification_status: 'rejected',
@@ -195,7 +192,7 @@ const Sellers = () => {
                         <AlertCircle className="w-5 h-5 text-red-500" />
                         <div>
                             <p className="text-sm font-medium text-red-500">Error loading sellers</p>
-                            <p className="text-xs text-red-500/80 mt-1">{error.message}</p>
+                            <p className="text-xs text-red-500/80 mt-1">{error}</p>
                         </div>
                         <button onClick={loadSellers} className="ml-auto px-3 py-1 bg-red-500/20 hover:bg-red-500/30 rounded text-xs font-medium text-red-500">
                             Retry
