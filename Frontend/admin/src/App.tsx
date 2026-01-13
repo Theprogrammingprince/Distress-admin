@@ -75,6 +75,7 @@ function App() {
           <Route path="/" element={<Navigate to="/admin" replace />} />
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Dashboard />} />
+            <Route path="sellers" element={<Sellers />} />
             <Route path="products" element={<Products />} />
             <Route path="reviews/sellers" element={<SellerReviews />} />
             <Route path="reviews/products" element={<ProductReviews />} />

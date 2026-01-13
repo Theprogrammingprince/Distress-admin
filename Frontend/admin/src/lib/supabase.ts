@@ -24,7 +24,17 @@ export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey, {
 });
 
 export async function getAuthHeaders() {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session }, error } = await supabase.auth.getSession();
+  
+  if (error) {
+    console.error('❌ [getAuthHeaders] Error getting session:', error);
+  }
+  
+  if (!session) {
+    console.warn('⚠️ [getAuthHeaders] No active session found');
+  } else {
+    console.log('✅ [getAuthHeaders] Session found, user:', session.user.email);
+  }
   
   return {
     'Authorization': `Bearer ${session?.access_token || ''}`,

@@ -13,7 +13,6 @@ import {
     AlertCircle,
     X
 } from 'lucide-react';
-import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
 
 interface Seller {
@@ -243,7 +242,19 @@ const Sellers = () => {
                                     </td>
                                     <td className="px-6 py-4">
                                         <p className="text-sm font-medium">{seller.business_name || 'Not provided'}</p>
-                                            {seller.verification_status.charAt(0).toUpperCase() + seller.verification_status.slice(1)}
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
+                                            seller.verification_status === 'approved' 
+                                                ? 'bg-green-500/10 text-green-500 border-green-500/20'
+                                                : seller.verification_status === 'rejected'
+                                                ? 'bg-red-500/10 text-red-500 border-red-500/20'
+                                                : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
+                                        }`}>
+                                            {seller.verification_status === 'approved' && <CheckCircle className="w-3 h-3" />}
+                                            {seller.verification_status === 'pending' && <Clock className="w-3 h-3" />}
+                                            {seller.verification_status === 'rejected' && <XCircle className="w-3 h-3" />}
+                                            {seller.verification_status ? seller.verification_status.charAt(0).toUpperCase() + seller.verification_status.slice(1) : 'Unknown'}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-sm text-muted-foreground">
